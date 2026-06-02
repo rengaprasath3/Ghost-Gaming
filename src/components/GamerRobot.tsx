@@ -4,102 +4,31 @@
  */
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 
 interface GamerRobotProps {
   status: 'idle' | 'charging' | 'flying' | 'targeting' | 'firing' | 'returning';
   isHeaderAvatar?: boolean;
-  gameColorTheme?: string; // Hex color or simple description used to theme visual highlights
+  gameColorTheme?: string; // Used as fallback highlight theme color
   onClick?: () => void;
 }
 
 export default function GamerRobot({ 
   status, 
   isHeaderAvatar = false, 
-  gameColorTheme = '#00f0ff', 
+  gameColorTheme = '#ea580c', 
   onClick 
 }: GamerRobotProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const [eyePulse, setEyePulse] = useState(0);
+  const [emberCount, setEmberCount] = useState<number>(0);
 
-  // Micro-fluctuations for eyes to make the robot feel alive
+  // Spark/Ember cycle when charging or firing to make Shendu feel alive
   useEffect(() => {
-    const interval = setInterval(() => {
-      setEyePulse((curr) => (curr === 0 ? 1 : 0));
-    }, 1200);
-    return () => clearInterval(interval);
+    const timer = setInterval(() => {
+      setEmberCount(c => (c + 1) % 5);
+    }, 180);
+    return () => clearInterval(timer);
   }, []);
-
-  // Determine eyes display path depending on status & hover
-  const getVisorGraphic = () => {
-    if (status === 'firing') {
-      // Angry/Locked target eyes
-      return (
-        <g id="visor-angry-eyes" className="transition-all duration-300">
-          <ellipse cx="32" cy="45" rx="10" ry="1.5" transform="rotate(-15 32 45)" fill="#ef4444" className="shadow-[0_0_12px_#ef4444]" />
-          <ellipse cx="68" cy="45" rx="10" ry="1.5" transform="rotate(15 68 45)" fill="#ef4444" className="shadow-[0_0_12px_#ef4444]" />
-          <circle cx="34" cy="45" r="2.5" fill="#ffffff" />
-          <circle cx="66" cy="45" r="2.5" fill="#ffffff" />
-          {/* Target lock overlay */}
-          <line x1="50" y1="35" x2="50" y2="55" stroke="#ef4444" strokeWidth="1" strokeDasharray="2,2" opacity="0.6" />
-          <line x1="40" y1="45" x2="60" y2="45" stroke="#ef4444" strokeWidth="1" strokeDasharray="2,2" opacity="0.6" />
-        </g>
-      );
-    }
-
-    if (status === 'targeting' || status === 'charging') {
-      // Alert scanning eyes
-      return (
-        <g id="visor-alert-eyes" className="transition-all duration-300">
-          <path d="M 22,48 L 42,42 L 22,42 Z" fill="#eab308" />
-          <path d="M 78,48 L 58,42 L 78,42 Z" fill="#eab308" />
-          <rect x="44" y="44" width="12" height="2" fill="#eab308" className="animate-pulse" />
-        </g>
-      );
-    }
-
-    if (status === 'flying' || status === 'returning') {
-      // High-speed slit eyes
-      return (
-        <g id="visor-flight-eyes" className="transition-all duration-300">
-          <rect x="24" y="44" width="16" height="3" rx="1.5" fill="#00f0ff" className="shadow-[0_0_10px_#00f0ff]" />
-          <rect x="60" y="44" width="16" height="3" rx="1.5" fill="#00f0ff" className="shadow-[0_0_10px_#00f0ff]" />
-        </g>
-      );
-    }
-
-    if (isHovered) {
-      // Inquisitive brackets eyes
-      return (
-        <g id="visor-hover-eyes" className="transition-all duration-300">
-          <path d="M 24,40 L 20,40 L 20,50 L 24,50" fill="none" stroke="#00f0ff" strokeWidth="2.5" strokeLinecap="round" />
-          <circle cx="28" cy="45" r="3" fill="#00f0ff" />
-          <circle cx="72" cy="45" r="3" fill="#00f0ff" />
-          <path d="M 76,40 L 80,40 L 80,50 L 76,50" fill="none" stroke="#00f0ff" strokeWidth="2.5" strokeLinecap="round" />
-        </g>
-      );
-    }
-
-    // Default: Friendly lazy digital eyes
-    return (
-      <g id="visor-friendly-eyes" className="transition-all duration-300">
-        <path 
-          d={eyePulse === 0 ? "M 22,46 Q 30,38 38,46" : "M 22,45 L 38,45"} 
-          fill="none" 
-          stroke={gameColorTheme} 
-          strokeWidth="3.5" 
-          strokeLinecap="round" 
-        />
-        <path 
-          d={eyePulse === 0 ? "M 62,46 Q 70,38 78,46" : "M 62,45 L 78,45"} 
-          fill="none" 
-          stroke={gameColorTheme} 
-          strokeWidth="3.5" 
-          strokeLinecap="round" 
-        />
-      </g>
-    );
-  };
 
   return (
     <div 
@@ -109,171 +38,113 @@ export default function GamerRobot({
       onClick={isHeaderAvatar ? onClick : undefined}
       style={{ width: '100%', height: '100%' }}
     >
-      {/* Background glow shadow circle */}
+      {/* Mystical Fire/Abyssal Glow Background Area */}
       <div 
-        className="absolute inset-0 rounded-full transition-all duration-500 blur-lg"
+        className="absolute inset-0 rounded-full transition-all duration-700 blur-2xl"
         style={{
-          background: `radial-gradient(circle, ${gameColorTheme}33 0%, transparent 70%)`,
-          transform: isHovered || status !== 'idle' ? 'scale(1.2)' : 'scale(0.8)'
+          background: `radial-gradient(circle, ${status === 'firing' ? 'rgba(239,68,68,0.5)' : status === 'charging' ? 'rgba(249,115,22,0.35)' : 'rgba(21,128,61,0.25)'} 0%, transparent 70%)`,
+          transform: isHovered || status !== 'idle' ? 'scale(1.4)' : 'scale(0.95)'
         }}
       />
 
-      {/* SVG Gaming Robot Model */}
-      <svg 
-        id="gaming-robot-model-svg"
-        viewBox="0 0 100 100" 
-        className={`w-full h-full transition-all duration-500 ${
-          status === 'charging' ? 'animate-[bounce_0.2s_infinite]' : 
-          status === 'targeting' ? 'animate-[pulse_0.8s_infinite]' : 
-          status === 'firing' ? 'animate-[bounce_0.1s_infinite]' : 
-          isHovered ? 'rotate-[-3deg] scale-[1.05]' : 'animate-[float_5s_ease-in-out_infinite]'
-        }`}
-        style={{
-          filter: `drop-shadow(0 0 8px ${gameColorTheme}44)`
+      {/* Motion wrapper for the Real Shendu character asset */}
+      <motion.div
+        className="relative w-full h-full flex items-center justify-center"
+        animate={status}
+        variants={{
+          idle: {
+            y: [0, -6, 0],
+            rotate: [0, 1.5, -1.5, 0],
+            transition: { repeat: Infinity, duration: 5, ease: "easeInOut" }
+          },
+          charging: {
+            x: [0, -1, 1, -1, 1, 0],
+            y: [0, 1, -1, 1, -1, 0],
+            scale: 1.05,
+            transition: { repeat: Infinity, duration: 0.12 }
+          },
+          flying: {
+            y: [-3, 3, -3],
+            rotate: [-2, 2, -2],
+            transition: { repeat: Infinity, duration: 2.5, ease: "easeInOut" }
+          },
+          targeting: {
+            scale: [1, 1.08, 1],
+            rotate: [-1, 1, -1],
+            transition: { repeat: Infinity, duration: 0.6, ease: "easeInOut" }
+          },
+          firing: {
+            x: [0, -2, 2, -1, 1, -2, 2, 0],
+            y: [0, 2, -2, 1, -1, 2, -2, 0],
+            scale: 1.15,
+            transition: { repeat: Infinity, duration: 0.08 }
+          },
+          returning: {
+            y: [0, -10, 0],
+            opacity: [1, 0.5, 1],
+            transition: { duration: 1.2, ease: "easeInOut" }
+          }
         }}
       >
-        <defs>
-          {/* Dynamic Glow Filter */}
-          <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-          
-          <linearGradient id="armor-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#1e293b" />
-            <stop offset="50%" stopColor="#0f172a" />
-            <stop offset="100%" stopColor="#020617" />
-          </linearGradient>
+        <img
+          src="https://static.wikia.nocookie.net/jackiechanadventures/images/1/1b/Shendu.png"
+          alt="Shendu"
+          referrerPolicy="no-referrer"
+          className={`w-full h-full object-contain transition-all duration-300 ${
+            isHovered ? 'scale-[1.08]' : ''
+          }`}
+          style={{
+            filter: status === 'firing'
+              ? 'drop-shadow(0 0 15px rgba(239, 68, 68, 0.95)) drop-shadow(0 0 5px rgba(234, 88, 12, 0.7)) brightness(1.2)'
+              : status === 'charging'
+                ? 'drop-shadow(0 0 12px rgba(249, 115, 22, 0.95)) drop-shadow(0 0 4px rgba(234, 88, 12, 0.6)) brightness(1.1)'
+                : status === 'targeting'
+                  ? 'drop-shadow(0 0 12px rgba(34, 197, 94, 0.9)) drop-shadow(0 0 4px rgba(22, 163, 74, 0.65))'
+                  : 'drop-shadow(0 0 8px rgba(21, 128, 61, 0.65)) drop-shadow(0 0 3px rgba(2, 44, 34, 0.45))'
+          }}
+        />
 
-          <linearGradient id="thruster-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#f97316" stopOpacity="1" />
-            <stop offset="30%" stopColor="#00f0ff" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#00f0ff" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-
-        {/* Thruster Flame vector (Animated height depending on state) */}
-        {(status === 'flying' || status === 'returning' || status === 'targeting' || status === 'firing') && (
-          <g id="thruster-fire">
-            <path 
-              d="M 40,82 L 50,105 L 60,82 Z" 
-              fill="url(#thruster-grad)" 
-              className="animate-pulse"
+        {/* Dynamic eye energy flares and flame breath when firing */}
+        {status === 'firing' && (
+          <>
+            {/* Right eye fiery crimson flare */}
+            <div 
+              className="absolute w-2 h-2 rounded-full bg-white shadow-[0_0_15px_#ef4444,_0_0_5px_#f97316] animate-ping"
+              style={{ top: '42%', left: '46%' }}
+            />
+            {/* Left eye fiery crimson flare */}
+            <div 
+              className="absolute w-2 h-2 rounded-full bg-white shadow-[0_0_15px_#ef4444,_0_0_5px_#f97316] animate-ping"
+              style={{ top: '40%', left: '55%' }}
+            />
+            
+            {/* Mythic Fire Cone blowing down from snout */}
+            <div 
+              className="absolute w-36 h-48 pointer-events-none z-10 origin-top bg-gradient-to-b from-yellow-300 via-orange-500 to-transparent blur-sm rounded-full mix-blend-screen animate-pulse"
               style={{
-                transformOrigin: '50px 82px',
+                top: '52%',
+                left: '50%',
+                transform: 'translateX(-50%) scaleX(0.7)',
+                animationDuration: '0.1s'
+              }}
+            />
+            <div 
+              className="absolute w-24 h-36 pointer-events-none z-20 origin-top bg-gradient-to-b from-white via-yellow-400 to-transparent blur-xs rounded-full mix-blend-screen animate-ping"
+              style={{
+                top: '54%',
+                left: '50%',
+                transform: 'translateX(-50%) scaleX(0.5)',
                 animationDuration: '0.15s'
               }}
             />
-            {/* Spark particles falling from engine */}
-            <circle cx="45" cy="88" r="1.5" fill="#f97316" className="animate-ping" />
-            <circle cx="55" cy="94" r="1" fill="#38bdf8" className="animate-bounce" />
-          </g>
+          </>
         )}
+      </motion.div>
 
-        {/* Floating Side Thruster Ears */}
-        <g id="side-ears">
-          {/* Left Wing / Thruster */}
-          <path 
-            d="M 12,38 L 2,42 L 5,58 L 12,52 Z" 
-            fill="url(#armor-grad)" 
-            stroke={gameColorTheme} 
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-            className="transition-all duration-500"
-            style={{
-              transform: isHovered || status !== 'idle' ? 'translate(-3px, 1px) rotate(-10deg)' : 'none',
-              transformOrigin: '12px 45px'
-            }}
-          />
-          {/* Left Wing LED */}
-          <circle cx="5" cy="50" r="1.5" fill={gameColorTheme} className="animate-pulse" />
-
-          {/* Right Wing / Thruster */}
-          <path 
-            d="M 88,38 L 98,42 L 95,58 L 88,52 Z" 
-            fill="url(#armor-grad)" 
-            stroke={gameColorTheme} 
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-            className="transition-all duration-500"
-            style={{
-              transform: isHovered || status !== 'idle' ? 'translate(3px, 1px) rotate(10deg)' : 'none',
-              transformOrigin: '88px 45px'
-            }}
-          />
-          {/* Right Wing LED */}
-          <circle cx="95" cy="50" r="1.5" fill={gameColorTheme} className="animate-pulse" />
-        </g>
-
-        {/* Antennas / Radar Spire */}
-        <g id="radar-antennas">
-          <line x1="50" y1="20" x2="50" y2="6" stroke={gameColorTheme} strokeWidth="2.5" strokeLinecap="round" />
-          <circle cx="50" cy="5" r="3.5" fill={gameColorTheme} style={{ filter: 'url(#neon-glow)' }} className="animate-ping" />
-          <circle cx="50" cy="5" r="2.5" fill="#ffffff" />
-          
-          {/* Angular secondary spires */}
-          <path d="M 32,25 L 24,12" stroke="url(#armor-grad)" strokeWidth="2" strokeLinecap="round" />
-          <path d="M 68,25 L 76,12" stroke="url(#armor-grad)" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="24" cy="12" r="1.5" fill={gameColorTheme} />
-          <circle cx="76" cy="12" r="1.5" fill={gameColorTheme} />
-        </g>
-
-        {/* Robot Head Outer Helmet Frame */}
-        <g id="helmet-armor">
-          <path 
-            d="M 28,26 L 72,26 L 86,42 L 86,64 L 70,80 L 30,80 L 14,64 L 14,42 Z" 
-            fill="url(#armor-grad)" 
-            stroke={gameColorTheme} 
-            strokeWidth="2.5" 
-            strokeLinejoin="round" 
-          />
-          
-          {/* Futuristic Rivets / Screws */}
-          <circle cx="20" cy="32" r="1" fill="#475569" />
-          <circle cx="80" cy="32" r="1" fill="#475569" />
-          <circle cx="20" cy="74" r="1" fill="#475569" />
-          <circle cx="80" cy="74" r="1" fill="#475569" />
-        </g>
-
-        {/* Visor Screen Shell */}
-        <g id="visor-screeen">
-          <path 
-            d="M 18,38 L 82,38 L 82,54 L 72,68 L 28,68 L 18,54 Z" 
-            fill="#020617" 
-            stroke={status === 'firing' ? '#ef4444' : status === 'targeting' || status === 'charging' ? '#eab308' : '#003344'} 
-            strokeWidth="1.5" 
-            strokeLinejoin="round" 
-          />
-          
-          {/* Holographic scanner line overlay */}
-          <path 
-            d="M 18,48 L 82,48" 
-            stroke={gameColorTheme} 
-            strokeWidth="0.5" 
-            opacity="0.25" 
-          />
-          
-          {/* Visor eyes coordinates dynamic drawing */}
-          {getVisorGraphic()}
-        </g>
-
-        {/* Speaker / Mouth line grilles */}
-        <g id="mouth-grille">
-          <line x1="40" y1="73" x2="60" y2="73" stroke={gameColorTheme} strokeWidth="1.5" opacity="0.3" strokeLinecap="round" />
-          <line x1="45" y1="76" x2="55" y2="76" stroke={gameColorTheme} strokeWidth="1.5" opacity="0.3" strokeLinecap="round" />
-        </g>
-
-        {/* Top/Side Decals */}
-        <g id="visor-decals" opacity="0.7">
-          <rect x="50" y="29" width="6" height="1.5" rx="0.5" fill="#64748b" />
-          <rect x="42" y="29" width="6" height="1.5" rx="0.5" fill="#64748b" />
-        </g>
-      </svg>
-
-      {/* Decorative prompt HUD when idle */}
+      {/* Decorative customized prompt HUD when idle */}
       {isHeaderAvatar && status === 'idle' && isHovered && (
-        <div className="absolute top-full mt-4 left-1/2 -translate-x-1/2 bg-cyan-950/95 border border-cyan-400 text-cyan-400 font-mono text-[9px] font-bold px-2 py-1 rounded shadow-[0_0_12px_rgba(0,240,255,0.4)] tracking-widest whitespace-nowrap animate-bounce z-40">
-          🔋 CLICK TO INITIATE ASSAULT
+        <div className="absolute top-full mt-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-600 via-red-600 to-amber-600 border border-white text-white font-mono text-[9px] font-black px-3 py-1.5 rounded-lg shadow-[0_8px_16px_rgba(234,88,12,0.4)] tracking-widest whitespace-nowrap animate-bounce z-40">
+          🐉 UNLEASH SHENDU'S FLAMES
         </div>
       )}
     </div>

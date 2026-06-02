@@ -1,82 +1,120 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Space Grotesk", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  --font-sans: "Fredoka", "Funhouse", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fredoka", "Funhouse", "Space Grotesk", sans-serif;
+  --font-mono: "Fredoka", "Funhouse", "JetBrains Mono", monospace;
   
-  --color-cyber-bg: #030303;
-  --color-cyber-card: #0c0d12;
-  --color-coc-orange: #ff7200;
-  --color-bgmi-cyan: #00f0ff;
-  --color-pogo-yellow: #fefe00;
-  --color-chess-green: #00e676;
+  --color-cyber-bg: #070913;
+  --color-cyber-card: #0d0e19;
+  --color-coc-orange: #f97316;
+  --color-bgmi-cyan: #06b6d4;
+  --color-pogo-yellow: #eab308;
+  --color-chess-green: #10b981;
 }
 
-/* Custom cyberpunk utilities */
+/* Custom cyberpunk utilities optimized for dark high-contrast theme */
 @layer utilities {
   .glow-coc {
-    text-shadow: 0 0 10px rgba(255, 114, 0, 0.6), 0 0 20px rgba(255, 114, 0, 0.2);
+    text-shadow: 0 0 12px rgba(249, 115, 22, 0.65), 0 0 25px rgba(249, 115, 22, 0.25);
   }
   .glow-bgmi {
-    text-shadow: 0 0 10px rgba(0, 240, 255, 0.6), 0 0 20px rgba(0, 240, 255, 0.2);
+    text-shadow: 0 0 12px rgba(6, 182, 212, 0.65), 0 0 25px rgba(6, 182, 212, 0.25);
   }
   .glow-pogo {
-    text-shadow: 0 0 10px rgba(254, 254, 0, 0.6), 0 0 20px rgba(254, 254, 0, 0.2);
+    text-shadow: 0 0 12px rgba(234, 179, 8, 0.65), 0 0 25px rgba(234, 179, 8, 0.25);
   }
   .glow-chess {
-    text-shadow: 0 0 10px rgba(0, 230, 118, 0.6), 0 0 20px rgba(0, 230, 118, 0.2);
+    text-shadow: 0 0 12px rgba(16, 185, 129, 0.65), 0 0 25px rgba(16, 185, 129, 0.25);
   }
   
   .border-glow-coc {
-    box-shadow: 0 0 15px rgba(255, 114, 0, 0.25), inset 0 0 10px rgba(255, 114, 0, 0.1);
+    box-shadow: 0 4px 25px rgba(249, 115, 22, 0.25), inset 0 0 12px rgba(249, 115, 22, 0.1);
   }
   .border-glow-bgmi {
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.25), inset 0 0 10px rgba(0, 240, 255, 0.1);
+    box-shadow: 0 4px 25px rgba(6, 182, 212, 0.25), inset 0 0 12px rgba(6, 182, 212, 0.1);
   }
   .border-glow-pogo {
-    box-shadow: 0 0 15px rgba(254, 254, 0, 0.25), inset 0 0 10px rgba(254, 254, 0, 0.1);
+    box-shadow: 0 4px 25px rgba(234, 179, 8, 0.25), inset 0 0 12px rgba(234, 179, 8, 0.1);
   }
   .border-glow-chess {
-    box-shadow: 0 0 15px rgba(0, 230, 118, 0.25), inset 0 0 10px rgba(0, 230, 118, 0.1);
+    box-shadow: 0 4px 25px rgba(16, 185, 129, 0.25), inset 0 0 12px rgba(16, 185, 129, 0.1);
   }
 }
 
-/* Scanline grid effects */
+@keyframes shake-tight {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  20% { transform: translate(-2px, 1.5px) rotate(-1deg); }
+  45% { transform: translate(1.5px, -1px) rotate(1deg); }
+  70% { transform: translate(-1px, -1px) rotate(-0.5deg); }
+  90% { transform: translate(2px, 1px) rotate(0.5deg); }
+}
+
+@keyframes shake-strong {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  15% { transform: translate(-4px, 3px) rotate(-3deg); }
+  35% { transform: translate(3px, -2px) rotate(3deg); }
+  55% { transform: translate(-3px, -1px) rotate(-1.5deg); }
+  75% { transform: translate(4px, 2px) rotate(2.5deg); }
+  90% { transform: translate(-2px, 1px) rotate(-1deg); }
+}
+
+@keyframes card-shake-heavy {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  12% { transform: translate(-3px, 2.5px) rotate(-1.5deg); }
+  28% { transform: translate(2.5px, -2px) rotate(1.2deg); }
+  45% { transform: translate(-2.5px, -1.5px) rotate(-1.2deg); }
+  65% { transform: translate(3px, 1.8px) rotate(1.5deg); }
+  85% { transform: translate(-1.5px, 1px) rotate(-0.5deg); }
+}
+
+.animate-card-shake {
+  animation: card-shake-heavy 0.2s ease-in-out;
+}
+
+.animate-shake-tight {
+  animation: shake-tight 0.15s infinite;
+}
+
+.animate-shake-strong {
+  animation: shake-strong 0.08s infinite;
+}
+
+/* Dark Cyber grid effects */
 .cyber-grid {
   background-size: 40px 40px;
-  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
 }
 
 .scanlines {
   background: linear-gradient(
-    rgba(18, 16, 16, 0) 50%, 
-    rgba(0, 0, 0, 0.25) 50%
+    rgba(18, 18, 24, 0) 50%, 
+    rgba(18, 18, 24, 0.25) 50%
   ), linear-gradient(
     90deg, 
-    rgba(255, 0, 0, 0.06), 
-    rgba(0, 255, 0, 0.02), 
-    rgba(0, 0, 255, 0.06)
+    rgba(239, 68, 68, 0.03), 
+    rgba(16, 185, 129, 0.02), 
+    rgba(6, 182, 212, 0.03)
   );
   background-size: 100% 4px, 6px 100%;
 }
 
-/* Scrollbar tuning for a futuristic retro appearance */
+/* Scrollbar tuning for dark tactical structure */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #06070a;
+  background: #02040a;
 }
 ::-webkit-scrollbar-thumb {
-  background: #20222f;
+  background: #1f293d;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3c3f56;
+  background: #38bdf8;
 }
 
 @keyframes glitch {
@@ -91,4 +129,3 @@
 .glitch-hover:hover {
   animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
 }
-

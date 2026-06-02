@@ -24,6 +24,8 @@ export interface GameData {
   mainStats: GameStat[];
   subStats: GameStat[];
   about: string;
+  logoUrl?: string;
+  bgScene?: string;
 }
 
 export interface Particle {

@@ -38,6 +38,7 @@ export default function App() {
   const [robotStatus, setRobotStatus] = useState<'idle' | 'charging' | 'flying' | 'targeting' | 'firing' | 'returning'>('idle');
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
   const [destPos, setDestPos] = useState({ x: 0, y: 0 });
+  const [activeAttackGameId, setActiveAttackGameId] = useState<GameID | null>(null);
   const [laserBeams, setLaserBeams] = useState<{ id: number; x1: number; y1: number; x2: number; y2: number }[]>([]);
 
   // Orchestrator method for combat drone flight
@@ -45,113 +46,162 @@ export default function App() {
     if (robotStatus !== 'idle') return;
 
     const avatarEl = document.getElementById('gamer-robot-avatar');
-    const targetEl = document.getElementById(`game-card-${activeGameId}`);
-    if (!avatarEl || !targetEl) {
+    if (!avatarEl) {
       setActiveTerminalLogs(prev => [
-        `ERROR: Robot launching failed. Grid elements obscured or missing coordinates.`,
+        `ERROR: Shendu summoning failed. Seal coordinates obscured or files corrupted.`,
         ...prev
       ]);
       return;
     }
 
     const avatarRect = avatarEl.getBoundingClientRect();
-    const targetRect = targetEl.getBoundingClientRect();
-    const scrollY = window.scrollY;
-    
-    // Calculate precise fixed viewport coordinates for flight paths
     const startX = avatarRect.left + avatarRect.width / 2;
     const startY = avatarRect.top + avatarRect.height / 2;
-    const endX = targetRect.left + targetRect.width / 2;
-    const endY = targetRect.top + targetRect.height / 2;
 
     setStartPos({ x: startX, y: startY });
-    setDestPos({ x: endX, y: endY });
     setRobotStatus('charging');
 
     setActiveTerminalLogs(prev => [
-      `SYS_WAR: [WEAPONS CHARGED] - Mini drone weapon core pre-heating...`,
+      `SYS_WAR: [SHENDU RE-AWAKENED] - Dragon demon pre-heating fire core and floating...`,
       ...prev
     ]);
 
-    // Hold charging animation, then blast-off
-    setTimeout(() => {
-      setRobotStatus('flying');
-      setActiveTerminalLogs(prev => [
-        `COMMAND: Drone detached! Trajectory parameters mapped to target Grid ${activeGameId.toUpperCase()}`,
-        ...prev
-      ]);
+    const gameIds: GameID[] = ['coc', 'bgmi', 'pogo', 'chess'];
 
-      // Flying to lock position (1 second duration)
-      setTimeout(() => {
-        setRobotStatus('targeting');
+    // Timed recursive path flow over every card
+    const runAttackSequence = (index: number) => {
+      if (index >= gameIds.length) {
+        // Complete sweep! Shendu returns home
+        setRobotStatus('returning');
+        setActiveAttackGameId(null);
+        setLaserBeams([]);
         setActiveTerminalLogs(prev => [
-          `TELEMETRY: Robot hovering in action range. Lock-status: ACQUIRED. Lock coordinates: (${Math.floor(endX)}px, ${Math.floor(endY)}px)`,
+          `COMPLETED: All sectors incinerated! Shendu firestorm concluded. Returning to base seal.`,
           ...prev
         ]);
 
-        // Targeting sweep (0.7 seconds duration)
+        // Flight home transition duration
+        setTimeout(() => {
+          setRobotStatus('idle');
+          setActiveTerminalLogs(prev => [
+            `SYS_LINK: Shendu docked as baseline emblem. Relink stability: OK.`,
+            ...prev
+          ]);
+        }, 1100);
+        return;
+      }
+
+      const targetId = gameIds[index];
+      const targetEl = document.getElementById(`game-card-${targetId}`);
+      if (!targetEl) {
+        // Skip card if not rendered
+        runAttackSequence(index + 1);
+        return;
+      }
+
+      // Smoothly scroll the card element to center so player can watch the assault
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      setRobotStatus('flying');
+      setActiveAttackGameId(null);
+      setLaserBeams([]);
+
+      // Continuously fetch and update coordinates dynamically during flight
+      const updateDestPosition = () => {
+        const freshEl = document.getElementById(`game-card-${targetId}`);
+        if (freshEl) {
+          const rect = freshEl.getBoundingClientRect();
+          setDestPos({
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2
+          });
+        }
+      };
+
+      updateDestPosition();
+
+      setActiveTerminalLogs(prev => [
+        `COMMAND: Shendu flying down coordinates! Trajectory lock set on Grid Sector: [${targetId.toUpperCase()}]`,
+        ...prev
+      ]);
+
+      // Flight time to travel (900ms)
+      setTimeout(() => {
+        setRobotStatus('targeting');
+        updateDestPosition();
+        setActiveTerminalLogs(prev => [
+          `TELEMETRY: Shendu hovering. Fire breath lock-status: LOCKED. Target grid: ${targetId.toUpperCase()}`,
+          ...prev
+        ]);
+
+        // Spend 500ms for lock flare effect, then open jaws and breathe fire!
         setTimeout(() => {
           setRobotStatus('firing');
+          setActiveAttackGameId(targetId);
+          updateDestPosition();
           setActiveTerminalLogs(prev => [
-            `FIREPOWER: Railgun lasers firing! Discharging energy onto Grid ${activeGameId.toUpperCase()}`,
+            `FIREPOWER: 🔥 Shendu unleashing hellfire breath onto Sector ${targetId.toUpperCase()}! Base databases under severe fire!`,
             ...prev
           ]);
 
-          let pulsesFired = 0;
-          const laserInterval = setInterval(() => {
-            if (pulsesFired >= 6) {
-              clearInterval(laserInterval);
+          let wavesFired = 0;
+          const totalWaves = 6;
+          const fireInterval = setInterval(() => {
+            if (wavesFired >= totalWaves) {
+              clearInterval(fireInterval);
               setLaserBeams([]);
-              setRobotStatus('returning');
-              setActiveTerminalLogs(prev => [
-                `COMPLETED: Drone assault routine finished. returning to header bay...`,
-                ...prev
-              ]);
-
-              // Flight back to dock
+              
+              // Proceed sweep to next waypoints after brief exhaust cooling
               setTimeout(() => {
-                setRobotStatus('idle');
-                setActiveTerminalLogs(prev => [
-                  `SYS_LINK: Drone docked. Telemetry signals stable, re-calibrated.`,
-                  ...prev
-                ]);
-              }, 1000);
+                runAttackSequence(index + 1);
+              }, 250);
               return;
             }
 
-            // Laser beam lines from dual muzzle positions to target card elements
-            const currentRobotY = endY - 80;
-            const targetXVar = endX - 100 + Math.random() * 200;
-            const targetYVar = endY - 50 + Math.random() * 100;
+            const freshEl = document.getElementById(`game-card-${targetId}`);
+            if (freshEl) {
+              const rect = freshEl.getBoundingClientRect();
+              const endX = rect.left + rect.width / 2;
+              const endY = rect.top + rect.height / 2;
+              const currentRobotY = endY - 80;
 
-            setLaserBeams([
-              {
-                id: Math.random(),
-                x1: endX - 12,
-                y1: currentRobotY + 14,
-                x2: targetXVar,
-                y2: targetYVar
-              },
-              {
-                id: Math.random(),
-                x1: endX + 12,
-                y1: currentRobotY + 14,
-                x2: targetXVar,
-                y2: targetYVar
-              }
-            ]);
+              // Scatter flames across the card size
+              const targetXVar = endX - 120 + Math.random() * 240;
+              const targetYVar = endY - 70 + Math.random() * 140;
 
-            // Fire hitting coordinate event
-            window.dispatchEvent(new CustomEvent('robot-laser-hit', { detail: { targetId: activeGameId } }));
+              setLaserBeams([
+                {
+                  id: Math.random(),
+                  x1: endX,
+                  y1: currentRobotY + 32, // Position coordinate corresponds to mouth opening of Shendu
+                  x2: targetXVar,
+                  y2: targetYVar
+                },
+                {
+                  id: Math.random(),
+                  x1: endX + (Math.random() - 0.5) * 8,
+                  y1: currentRobotY + 32,
+                  x2: targetXVar - 40 + Math.random() * 80,
+                  y2: targetYVar - 45 + Math.random() * 90
+                }
+              ]);
 
-            pulsesFired++;
+              // Dispatch explosive laser-hit event
+              window.dispatchEvent(new CustomEvent('robot-laser-hit', { detail: { targetId } }));
+            }
+
+            wavesFired++;
           }, 180);
 
-        }, 700);
+        }, 500);
 
-      }, 1000);
+      }, 900);
+    };
 
-    }, 800);
+    // Charge power at base coordinates for 1200ms before soaring out
+    setTimeout(() => {
+      runAttackSequence(0);
+    }, 1200);
   };
 
   // Fluctuating FPS simulation ticker
@@ -191,31 +241,31 @@ export default function App() {
   // Sound spectrum configurations
   const activeColorTheme = {
     'coc': {
-      text: 'text-orange-500',
-      borderGlow: 'border-orange-500/30 shadow-[0_0_20px_rgba(255,114,0,0.2)]',
+      text: 'text-orange-400',
+      borderGlow: 'border-orange-500/35 bg-[#121625]/90 shadow-[0_12px_45px_rgba(249,115,22,0.18)]',
       label: 'COC // RETRIEVED: Renga',
-      colorCode: '#ff7200',
+      colorCode: '#f97316',
       soundFrequency: [12, 18, 25, 42, 60, 48, 30, 20, 36, 12, 38, 55, 40, 18, 5]
     },
     'bgmi': {
       text: 'text-cyan-400',
-      borderGlow: 'border-cyan-400/30 shadow-[0_0_20px_rgba(0,240,255,0.2)]',
+      borderGlow: 'border-cyan-500/35 bg-[#121625]/90 shadow-[0_12px_45px_rgba(6,182,212,0.18)]',
       label: 'BGMI // RETRIEVED: Clown Ghost',
-      colorCode: '#00f0ff',
+      colorCode: '#06b6d4',
       soundFrequency: [30, 48, 62, 75, 40, 25, 58, 68, 72, 85, 44, 30, 60, 48, 25]
     },
     'pogo': {
       text: 'text-yellow-400',
-      borderGlow: 'border-yellow-400/30 shadow-[0_0_20px_rgba(254,254,0,0.2)]',
+      borderGlow: 'border-yellow-500/35 bg-[#121625]/90 shadow-[0_12px_45px_rgba(250,204,21,0.18)]',
       label: 'POGO // RETRIEVED: Rengaprasath',
-      colorCode: '#fefe00',
+      colorCode: '#facc15',
       soundFrequency: [18, 28, 48, 32, 15, 45, 60, 40, 55, 65, 38, 25, 48, 20, 12]
     },
     'chess': {
       text: 'text-emerald-400',
-      borderGlow: 'border-emerald-400/30 shadow-[0_0_20px_rgba(0,230,118,0.2)]',
+      borderGlow: 'border-emerald-500/35 bg-[#121625]/90 shadow-[0_12px_45px_rgba(16,185,129,0.18)]',
       label: 'CHESS // RETRIEVED: Renga',
-      colorCode: '#00e676',
+      colorCode: '#10b981',
       soundFrequency: [5, 12, 18, 24, 30, 35, 40, 42, 38, 30, 24, 18, 12, 6, 2]
     }
   }[activeGameId];
@@ -229,26 +279,26 @@ export default function App() {
   }[activeGameId];
 
   return (
-    <div className="min-h-screen bg-[#030304] text-white selection:bg-cyan-400 selection:text-black font-sans relative overflow-x-hidden p-4 md:p-8">
+    <div className="min-h-screen bg-[#070a13] text-slate-100 selection:bg-cyan-500 selection:text-white font-sans relative overflow-x-hidden p-4 md:p-8">
       
       {/* Background aesthetics */}
-      <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none z-0" />
-      <div className="absolute inset-0 scanlines opacity-[0.04] pointer-events-none z-0" />
+      <div className="absolute inset-0 cyber-grid opacity-60 pointer-events-none z-0" />
+      <div className="absolute inset-0 scanlines opacity-10 pointer-events-none z-0" />
       
       {/* Dynamic drifting background glows */}
-      <div className="absolute top-1/4 left-1/4 w-[450px] h-[450px] bg-cyan-500/5 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-orange-500/5 rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/4 w-[450px] h-[450px] bg-cyan-500/8 rounded-full blur-[110px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-orange-500/8 rounded-full blur-[130px] pointer-events-none" />
 
       {/* Futuristic Fixed Navigation pillars & decorative rails */}
-      <div className="fixed left-3 top-1/2 -translate-y-1/2 writing-mode-vertical hidden xl:flex flex-col items-center gap-3.5 font-mono text-[9px] text-zinc-500 uppercase tracking-[0.35em] pointer-events-none select-none z-30">
-        <Cpu className="w-3.5 h-3.5 text-cyan-500" />
+      <div className="fixed left-3 top-1/2 -translate-y-1/2 writing-mode-vertical hidden xl:flex flex-col items-center gap-3.5 font-mono text-[9px] text-slate-500 uppercase tracking-[0.35em] pointer-events-none select-none z-30">
+        <Cpu className="w-3.5 h-3.5 text-cyan-400" />
         <span>NEO COCKPIT PORTFOLIO // VER 2.4</span>
-        <span className="w-[1.5px] h-24 bg-gradient-to-b from-cyan-500/40 to-transparent" />
+        <span className="w-[1.5px] h-24 bg-gradient-to-b from-cyan-400/20 to-transparent" />
       </div>
 
-      <div className="fixed right-3 top-1/2 -translate-y-1/2 writing-mode-vertical hidden xl:flex flex-col items-center gap-3.5 font-mono text-[9px] text-zinc-500 uppercase tracking-[0.35em] pointer-events-none select-none z-30">
+      <div className="fixed right-3 top-1/2 -translate-y-1/2 writing-mode-vertical hidden xl:flex flex-col items-center gap-3.5 font-mono text-[9px] text-slate-500 uppercase tracking-[0.35em] pointer-events-none select-none z-30">
         <span>STABLE EMULATION COMPILED</span>
-        <span className="w-[1.5px] h-24 bg-gradient-to-b from-orange-500/40 to-transparent" />
+        <span className="w-[1.5px] h-24 bg-gradient-to-b from-orange-400/20 to-transparent" />
         <Activity className="w-3.5 h-3.5 text-orange-400" />
       </div>
 
@@ -264,35 +314,35 @@ export default function App() {
         {/* Dynamic Holographic Audio / Spectrum Equalizer Panel */}
         <div 
           id="holographic-tactical-hud"
-          className={`relative border-2 rounded-2xl p-5 mb-8 transition-all duration-500 bg-black/90 p-6 backdrop-blur-xl flex flex-col xl:flex-row justify-between gap-6 overflow-hidden ${activeColorTheme.borderGlow}`}
+          className={`relative border-2 rounded-2xl transition-all duration-500 p-5 md:p-6 backdrop-blur-xl flex flex-col xl:flex-row justify-between gap-6 overflow-hidden ${activeColorTheme.borderGlow}`}
         >
           {/* Active grid highlight backdrop */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-400/5 rounded-full blur-[50px] pointer-events-none" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-[50px] pointer-events-none" />
 
           {/* Left panel: Live Signal Metrics */}
           <div className="flex flex-col md:flex-row sm:items-center gap-6 flex-1 min-w-0">
             {/* Live pulsing signal point */}
-            <div className="relative shrink-0 flex items-center justify-center w-14 h-14 rounded-xl bg-white/5 border border-white/10 select-none">
-              <span className={`absolute w-3 h-3 rounded-full ${activeGameId === 'coc' ? 'bg-orange-500 shadow-[0_0_12px_#ff7200]' : activeGameId === 'bgmi' ? 'bg-cyan-400 shadow-[0_0_12px_#00f0ff]' : activeGameId === 'pogo' ? 'bg-yellow-400 shadow-[0_0_12px_#fefe00]' : 'bg-emerald-400 shadow-[0_0_12px_#00e676]'} animate-pulse`} />
-              <Activity className="w-6 h-6 text-zinc-400 animate-pulse" />
+            <div className="relative shrink-0 flex items-center justify-center w-14 h-14 rounded-xl bg-[#0b0e1a] border border-slate-800 select-none">
+              <span className={`absolute w-3 h-3 rounded-full ${activeGameId === 'coc' ? 'bg-orange-500 shadow-[0_0_12px_#ea580c]' : activeGameId === 'bgmi' ? 'bg-cyan-500 shadow-[0_0_12px_#06b6d4]' : activeGameId === 'pogo' ? 'bg-yellow-500 shadow-[0_0_12px_#eab308]' : 'bg-emerald-500 shadow-[0_0_12px_#10b981]'} animate-pulse`} />
+              <Activity className="w-6 h-6 text-slate-500 animate-pulse" />
             </div>
 
             <div className="min-w-0">
-              <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest block flex items-center gap-1">
-                <Radio className="w-3 h-3 text-orange-500 shrink-0" />
+              <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest block flex items-center gap-1 font-bold">
+                <Radio className="w-3 h-3 text-orange-500 shrink-0 animate-pulse" />
                 SYSTEM FREQUENCY INTERPRETATION MATRIX
               </span>
               
-              <h2 className="font-display font-black tracking-tight text-lg md:text-xl text-white mt-1 uppercase flex flex-wrap items-center gap-2">
+              <h2 className="font-display font-black tracking-tight text-lg md:text-xl text-slate-100 mt-1 uppercase flex flex-wrap items-center gap-2">
                 ACTIVE COCKPIT NODE: <strong className={activeColorTheme.text}>{activeGame.title}</strong>
-                <span className="text-zinc-500 font-mono text-xs font-normal">[{activeColorTheme.label}]</span>
+                <span className="text-slate-400 font-mono text-xs font-normal">[{activeColorTheme.label}]</span>
               </h2>
             </div>
           </div>
 
           {/* Center Graphic Spectrum Equalizer Bars */}
-          <div className="flex items-end justify-center gap-1.5 h-14 px-4 bg-zinc-950/60 border border-white/5 rounded-xl min-w-[220px] self-center py-2 relative overflow-hidden select-none">
-            <span className="absolute top-1.5 left-2 px-1 text-[8px] font-mono text-zinc-500 tracking-wider">SPECTRUM WAVE</span>
+          <div className="flex items-end justify-center gap-1.5 h-14 px-4 bg-[#080b13]/90 border border-slate-800/80 rounded-xl min-w-[220px] self-center py-2 relative overflow-hidden select-none">
+            <span className="absolute top-1.5 left-2 px-1 text-[8px] font-mono text-slate-400 tracking-wider font-bold">SPECTRUM WAVE</span>
             {activeColorTheme.soundFrequency.map((maxH, idx) => (
               <motion.div
                 key={idx}
@@ -309,7 +359,7 @@ export default function App() {
                 className="w-1.5 rounded-t"
                 style={{
                   backgroundColor: activeColorTheme.colorCode,
-                  opacity: 0.35 + (idx / 25)
+                  opacity: 0.5 + (idx / 30)
                 }}
               />
             ))}
@@ -323,11 +373,11 @@ export default function App() {
               onClick={() => setSoundEnabled(!soundEnabled)}
               className={`flex items-center gap-2 font-mono text-xs border rounded-xl px-4 py-2 transition-all duration-300 ${
                 soundEnabled 
-                  ? 'bg-zinc-900 border-cyan-400/40 text-cyan-400 shadow-[0_0_15px_rgba(0,240,255,0.15)]' 
-                  : 'bg-transparent border-white/5 text-zinc-500 hover:text-zinc-400'
+                  ? 'bg-slate-900 border-cyan-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.3)]' 
+                  : 'bg-[#121625]/80 border-slate-800 text-slate-400 hover:text-slate-200'
               }`}
             >
-              <Volume2 className="w-4 h-4" />
+              <Volume2 className="w-4 h-4 text-cyan-400" />
               <span>FX EQUALIZER: {soundEnabled ? 'HUD ON' : 'MUTED'}</span>
             </button>
 
@@ -335,9 +385,9 @@ export default function App() {
             <button 
               id="console-hard-reboot"
               onClick={handleResetAll}
-              className="flex items-center gap-2 font-mono text-xs border border-white/10 hover:border-cyan-400/40 hover:bg-cyan-950/20 transition-all duration-300 rounded-xl px-4 py-2 text-zinc-300"
+              className="flex items-center gap-2 font-mono text-xs border border-slate-800 bg-[#121625]/80 hover:border-cyan-505 hover:border-cyan-500 hover:bg-cyan-500/10 transition-all duration-300 rounded-xl px-4 py-2 text-slate-300"
             >
-              <RefreshCw className="w-4 h-4 text-cyan-400 animate-spin-slow" />
+              <RefreshCw className="w-4 h-4 text-cyan-500 animate-spin-slow" />
               <span>REBOOT MATRIX</span>
             </button>
           </div>
@@ -348,12 +398,12 @@ export default function App() {
           
           {/* Main Games Portfolio Cards (occupies 8 columns on desktop) */}
           <div id="games-grid-wrapper" className="lg:col-span-8 flex flex-col gap-6">
-            <div className="flex items-center justify-between border-b border-white/5 pb-3">
-              <h3 className="font-display font-extrabold tracking-wider text-sm md:text-base flex items-center gap-2">
-                <Gamepad2 className="w-5 h-5 text-cyan-400" />
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="font-display font-extrabold tracking-wider text-sm md:text-base flex items-center gap-2 text-white">
+                <Gamepad2 className="w-5 h-5 text-cyan-600" />
                 <span>GAMES DIRECTORY & PROFILE PORTAL</span>
               </h3>
-              <span className="font-mono text-[10px] text-zinc-500">
+              <span className="font-mono text-[10px] text-slate-400">
                 TOTAL INTEGRATIONS: 4 // OPERATOR STATE: OK
               </span>
             </div>
@@ -381,24 +431,23 @@ export default function App() {
           <div id="control-terminal-pillar" className="lg:col-span-4 flex flex-col gap-6 lg:sticky lg:top-8">
             
             {/* Live Performance System Diagnostics Tracker */}
-            <div className="rounded-2xl border border-white/5 bg-slate-950/60 backdrop-blur-xl p-5 shadow-2xl relative overflow-hidden">
+            <div className="rounded-2xl border border-slate-800/90 bg-[#121625]/90 p-5 shadow-[0_8px_25px_rgba(0,0,0,0.15)] relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-[40px] pointer-events-none" />
-              <div className="absolute top-0 left-0 w-3 h-[3px] bg-cyan-400" />
-              <div className="absolute top-0 left-0 w-[3px] h-3 bg-cyan-400" />
+              <div className="absolute top-0 left-0 w-3 h-[3px] bg-cyan-500" />
+              <div className="absolute top-0 left-0 w-[3px] h-3 bg-cyan-500" />
               
-              <h4 className="font-display font-black text-xs uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-400 mb-4 pb-2 border-b border-white/5 flex items-center justify-between">
+              <h4 className="font-display font-black text-xs uppercase tracking-widest text-slate-200 mb-4 pb-2 border-b border-[#1f293d] flex items-center justify-between">
                 <span>SYSTEM PERFORMANCE</span>
-                <Sliders className="w-4 h-4 text-cyan-400 animate-pulse" />
+                <Sliders className="w-4 h-4 text-cyan-500 animate-pulse" />
               </h4>
-
               <div className="space-y-4">
                 {/* 120 FPS Metric */}
                 <div>
-                  <div className="flex justify-between items-center text-[10px] font-mono text-zinc-400 mb-1">
+                  <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 mb-1">
                     <span>DYNAMIC REACTION SPEED</span>
                     <strong className="text-cyan-400 text-xs font-black">{fps} FPS</strong>
                   </div>
-                  <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 bg-slate-950/60 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all duration-300"
                       style={{ width: `${(fps / 122) * 100}%` }}
@@ -408,23 +457,23 @@ export default function App() {
 
                 {/* Account Linked Ratio */}
                 <div>
-                  <div className="flex justify-between items-center text-[10px] font-mono text-zinc-400 mb-1">
+                  <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 mb-1">
                     <span>ACCOUNT LINKAGE PROGRESS</span>
                     <strong className="text-emerald-400 text-xs font-black">4 / 4 STABLE</strong>
                   </div>
-                  <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 bg-slate-950/60 rounded-full overflow-hidden">
                     <div className="h-full bg-emerald-400 rounded-full w-full" />
                   </div>
                 </div>
 
                 {/* India Regional Nodes ping */}
                 <div className="grid grid-cols-2 gap-2 pt-2 text-center text-xs font-mono">
-                  <div className="bg-[#0c0d12] border border-white/5 p-2 rounded-lg">
-                    <span className="text-[9px] text-zinc-500 uppercase tracking-widest block">SECTOR PING</span>
-                    <span className="text-white font-bold block mt-0.5">8ms</span>
+                  <div className="bg-[#0b0e1a]/80 border border-slate-800/80 p-2 rounded-lg">
+                    <span className="text-[9px] text-slate-400 uppercase tracking-widest block">SECTOR PING</span>
+                    <span className="text-slate-100 font-bold block mt-0.5">8ms</span>
                   </div>
-                  <div className="bg-[#0c0d12] border border-white/5 p-2 rounded-lg">
-                    <span className="text-[9px] text-zinc-500 uppercase tracking-widest block">PACKET LOSS</span>
+                  <div className="bg-[#0b0e1a]/80 border border-slate-800/80 p-2 rounded-lg">
+                    <span className="text-[9px] text-slate-400 uppercase tracking-widest block">PACKET LOSS</span>
                     <span className="text-emerald-400 font-bold block mt-0.5">0.00%</span>
                   </div>
                 </div>
@@ -432,50 +481,50 @@ export default function App() {
             </div>
 
             {/* Tactical Commentary HUD Observation Log */}
-            <div className="rounded-2xl border border-white/5 bg-slate-950/60 backdrop-blur-xl p-5 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-3 h-[3px] bg-orange-400" />
-              <div className="absolute top-0 left-0 w-[3px] h-3 bg-orange-400" />
+            <div className="rounded-2xl border border-slate-800/90 bg-[#121625]/90 p-5 shadow-[0_8px_25px_rgba(0,0,0,0.15)] relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-3 h-[3px] bg-orange-500" />
+              <div className="absolute top-0 left-0 w-[3px] h-3 bg-orange-500" />
 
-              <h4 className="font-display font-black text-xs uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-400 mb-3 pb-2 border-b border-white/5 flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-orange-400" />
+              <h4 className="font-display font-black text-xs uppercase tracking-widest text-slate-200 mb-3 pb-2 border-b border-slate-800/80 flex items-center gap-2">
+                <Terminal className="w-4 h-4 text-orange-500" />
                 <span>TACTICAL CONSOLE NOTES</span>
               </h4>
 
-              <div className="bg-black/80 border border-white/5 rounded-xl p-4 font-mono text-xs">
-                <span className="bg-orange-500/10 text-orange-400 border border-orange-500/20 text-[9px] px-2 py-0.5 rounded tracking-widest uppercase font-bold block w-fit mb-3">
+              <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 font-mono text-xs">
+                <span className="bg-orange-500/10 text-orange-400 border border-orange-500/30 text-[9px] px-2 py-0.5 rounded tracking-widest uppercase font-bold block w-fit mb-3">
                   AUDIO LOG ANALYZER
                 </span>
-                <p className="text-zinc-300 leading-relaxed font-sans mt-1 text-xs select-none">
+                <p className="text-slate-300 leading-relaxed font-sans mt-1 text-xs select-none">
                   &quot;{activeCommentary}&quot;
                 </p>
               </div>
             </div>
 
             {/* Holographic Diagnostic Stream Logs */}
-            <div className="rounded-2xl border border-white/5 bg-slate-950/60 backdrop-blur-xl p-5 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-3 h-[3px] bg-yellow-400" />
-              <div className="absolute top-0 left-0 w-[3px] h-3 bg-yellow-400" />
+            <div className="rounded-2xl border border-slate-800/90 bg-[#121625]/90 p-5 shadow-[0_8px_25px_rgba(0,0,0,0.15)] relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-3 h-[3px] bg-yellow-500" />
+              <div className="absolute top-0 left-0 w-[3px] h-3 bg-yellow-500" />
 
-              <h4 className="font-display font-black text-xs uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-400 mb-3 pb-2 border-b border-white/5 flex items-center justify-between">
+              <h4 className="font-display font-black text-xs uppercase tracking-widest text-slate-200 mb-3 pb-2 border-b border-slate-800/80 flex items-center justify-between">
                 <span>TERMINAL SYSTEMS FEED</span>
-                <Activity className="w-4 h-4 text-yellow-400 animate-pulse" />
+                <Activity className="w-4 h-4 text-yellow-500 animate-pulse" />
               </h4>
 
-              <div className="bg-zinc-950/90 border border-white/5 p-4 rounded-xl font-mono text-[10px] space-y-2 h-[150px] overflow-y-auto">
+              <div className="bg-slate-900 border border-slate-950 p-4 rounded-xl font-mono text-[10px] space-y-2 h-[150px] overflow-y-auto shadow-inner">
                 {activeTerminalLogs.length === 0 ? (
-                  <div className="text-zinc-600 italic">No system signal logs recorded yet...</div>
+                  <div className="text-slate-500 italic">No system signal logs recorded yet...</div>
                 ) : (
                   activeTerminalLogs.map((log, lIdx) => (
-                    <div key={lIdx} className="text-zinc-300 border-l-2 border-cyan-500/30 pl-2 leading-normal">
-                      <span className="text-zinc-600 mr-1">[{new Date().toLocaleTimeString().substring(0, 8)}]</span>
+                    <div key={lIdx} className="text-slate-300 border-l-2 border-cyan-500/30 pl-2 leading-normal">
+                      <span className="text-slate-500 mr-1">[{new Date().toLocaleTimeString().substring(0, 8)}]</span>
                       {log}
                     </div>
                   ))
                 )}
               </div>
-              <div className="mt-3 flex justify-between items-center text-[9px] font-mono text-zinc-500 px-1">
+              <div className="mt-3 flex justify-between items-center text-[9px] font-mono text-slate-400 px-1 font-bold">
                 <span>FEED: CH_1 // SECURE</span>
-                <span className="animate-pulse">● RECORDING_STREAM</span>
+                <span className="text-slate-500 animate-pulse">● RECORDING_STREAM</span>
               </div>
             </div>
 
@@ -491,12 +540,12 @@ export default function App() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 10 }}
               id="chess-easter-egg-alert"
-              className="rounded-2xl border border-emerald-500/30 bg-emerald-950/20 backdrop-blur-xl p-5 mb-8 flex items-start gap-4 shadow-[0_0_20px_rgba(0,230,118,0.1)] relative overflow-hidden"
+              className="rounded-2xl border border-emerald-500/25 bg-emerald-950/40 backdrop-blur-xl p-5 mb-8 flex items-start gap-4 shadow-[0_4px_20px_rgba(16,185,129,0.15)] relative overflow-hidden"
             >
-              <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-400/5 rounded-full blur-[40px] pointer-events-none" />
-              <ShieldAlert className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+              <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/10 rounded-full blur-[40px] pointer-events-none" />
+              <ShieldAlert className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5 animate-bounce" />
               <div className="text-xs font-mono text-emerald-300 leading-relaxed">
-                <strong className="text-white text-sm block mb-1">COGNITIVE GRANDMASTER REPORT:</strong>
+                <strong className="text-white text-sm block mb-1 font-bold">COGNITIVE GRANDMASTER REPORT:</strong>
                 User profile <strong className="text-white font-bold">Renga</strong> rating verified at <strong className="text-emerald-400 font-bold">200 ELO</strong>. 
                 Diagnostic analysis indicates highly complex early Queen maneuvers that completely disregard standard chess openings. 
                 Use caution during checkmate coordinates mapping.
@@ -505,42 +554,73 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* Laser SVGs drawn absolutely across the entire viewport during firing */}
+        {/* Blazing Flame Breathing SVGs drawn absolutely across the entire viewport during firing */}
         {robotStatus === 'firing' && (
           <svg className="fixed inset-0 w-full h-full pointer-events-none z-50">
-            {laserBeams.map(laser => (
-              <g key={laser.id}>
-                {/* Thick glow layer */}
-                <line 
-                  x1={laser.x1} 
-                  y1={laser.y1} 
-                  x2={laser.x2} 
-                  y2={laser.y2} 
-                  stroke={activeGameId === 'coc' ? '#ff3c00' : activeGameId === 'bgmi' ? '#00f0ff' : activeGameId === 'pogo' ? '#facc15' : '#10b981'} 
-                  strokeWidth="8" 
-                  strokeLinecap="round" 
-                  opacity="0.85"
-                  className="blur-sm"
-                />
-                {/* Crisp core rail beam */}
-                <line 
-                  x1={laser.x1} 
-                  y1={laser.y1} 
-                  x2={laser.x2} 
-                  y2={laser.y2} 
-                  stroke="#ffffff" 
-                  strokeWidth="3.5" 
-                  strokeLinecap="round" 
-                />
-                {/* Spark splash ring */}
-                <circle cx={laser.x2} cy={laser.y2} r="14" fill="none" stroke="#ffffff" strokeWidth="2" className="animate-ping" opacity="0.6" />
-                <circle cx={laser.x2} cy={laser.y2} r="6" fill={activeColorTheme.colorCode} className="animate-pulse" />
-              </g>
-            ))}
+            <defs>
+              <linearGradient id="flame-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#fef08a" /> {/* Pure hot yellow */}
+                <stop offset="45%" stopColor="#f97316" /> {/* Molten Orange */}
+                <stop offset="100%" stopColor="#dc2626" /> {/* Scorched Red */}
+              </linearGradient>
+            </defs>
+            {laserBeams.map(laser => {
+              // Create wavy coordinate shifts for an organic breathing fire effect
+              const midX = (laser.x1 + laser.x2) / 2 + Math.sin(laser.id * 12) * 18;
+              const midY = (laser.y1 + laser.y2) / 2 + Math.cos(laser.id * 12) * 18;
+
+              return (
+                <g key={laser.id}>
+                  {/* Broad thermal heatwave aura */}
+                  <path 
+                    d={`M ${laser.x1} ${laser.y1} Q ${midX} ${midY} ${laser.x2} ${laser.y2}`}
+                    fill="none"
+                    stroke="#dc2626" 
+                    strokeWidth="28" 
+                    strokeLinecap="round" 
+                    opacity="0.32"
+                    className="blur-md"
+                  />
+                  {/* Thick primary flame path */}
+                  <path 
+                    d={`M ${laser.x1} ${laser.y1} Q ${midX} ${midY} ${laser.x2} ${laser.y2}`}
+                    fill="none"
+                    stroke="#ea580c" 
+                    strokeWidth="14" 
+                    strokeLinecap="round" 
+                    opacity="0.8"
+                    className="blur-sm"
+                  />
+                  {/* Glowing hot composite core plasma */}
+                  <path 
+                    d={`M ${laser.x1} ${laser.y1} Q ${midX} ${midY} ${laser.x2} ${laser.y2}`}
+                    fill="none"
+                    stroke="url(#flame-grad)" 
+                    strokeWidth="6" 
+                    strokeLinecap="round" 
+                    opacity="0.95"
+                  />
+                  {/* Blending core intensity beam */}
+                  <path 
+                    d={`M ${laser.x1} ${laser.y1} Q ${midX} ${midY} ${laser.x2} ${laser.y2}`}
+                    fill="none"
+                    stroke="#fffbeb" 
+                    strokeWidth="2.2" 
+                    strokeLinecap="round" 
+                  />
+
+                  {/* Explosive impact shockwave rings on the target card */}
+                  <circle cx={laser.x2} cy={laser.y2} r="25" fill="none" stroke="#f97316" strokeWidth="2.5" className="animate-ping" opacity="0.5" />
+                  <circle cx={laser.x2} cy={laser.y2} r="12" fill="#ef4444" opacity="0.8" className="animate-pulse" />
+                  <circle cx={laser.x2 + Math.sin(laser.id * 4) * 22} cy={laser.y2 - 12} r="2" fill="#fbbf24" className="animate-bounce" />
+                  <circle cx={laser.x2 - Math.cos(laser.id * 4) * 22} cy={laser.y2 - 25} r="1.5" fill="#f97316" className="animate-ping" />
+                </g>
+              );
+            })}
           </svg>
         )}
 
-        {/* Floating Tactical Combat Drone in viewport flight */}
+        {/* Floating Tactical Shendu Dragon in viewport flight */}
         <AnimatePresence>
           {robotStatus !== 'idle' && (
             <motion.div
@@ -548,51 +628,54 @@ export default function App() {
               initial={{ x: startPos.x, y: startPos.y, scale: 0.2, opacity: 0 }}
               animate={
                 robotStatus === 'charging' ? {
-                  x: [startPos.x, startPos.x - 4, startPos.x + 4, startPos.x - 2, startPos.x + 2, startPos.x],
-                  y: [startPos.y, startPos.y - 2, startPos.y + 2, startPos.y - 1, startPos.y + 1, startPos.y],
+                  x: startPos.x,
+                  y: startPos.y,
                   scale: 0.9,
-                  opacity: 0.9,
+                  opacity: 0.95,
                   rotate: 0
                 } : robotStatus === 'flying' ? {
                   x: destPos.x,
                   y: destPos.y - 80,
-                  scale: 1.25,
+                  scale: 1.35,
                   opacity: 1,
                   rotate: 15
                 } : robotStatus === 'targeting' ? {
                   x: destPos.x,
-                  y: [destPos.y - 80, destPos.y - 84, destPos.y - 78, destPos.y - 80],
-                  scale: 1.3,
+                  y: destPos.y - 80,
+                  scale: 1.4,
                   opacity: 1,
                   rotate: 0
                 } : robotStatus === 'firing' ? {
-                  x: [destPos.x - 2, destPos.x + 2, destPos.x - 1, destPos.x + 1, destPos.x],
-                  y: [destPos.y - 81, destPos.y - 79, destPos.y - 80, destPos.y - 82, destPos.y - 80],
-                  scale: 1.35,
+                  x: destPos.x,
+                  y: destPos.y - 80,
+                  scale: 1.45,
                   opacity: 1,
-                  rotate: [0, -1, 1, -1, 1, 0]
+                  rotate: 0
                 } : robotStatus === 'returning' ? {
-                  x: [destPos.x, startPos.x],
-                  y: [destPos.y - 80, startPos.y],
-                  scale: [1.3, 0.4],
-                  opacity: [1, 0.2],
+                  x: startPos.x,
+                  y: startPos.y,
+                  scale: 0.3,
+                  opacity: 0.15,
                   rotate: -25
                 } : { x: startPos.x, y: startPos.y }
               }
               exit={{ scale: 0.1, opacity: 0 }}
               transition={{
                 type: "spring",
-                stiffness: robotStatus === 'flying' || robotStatus === 'returning' ? 140 : 250,
-                damping: robotStatus === 'flying' || robotStatus === 'returning' ? 16 : 22,
-                duration: robotStatus === 'returning' ? 0.9 : undefined
+                stiffness: robotStatus === 'flying' || robotStatus === 'returning' ? 120 : 180,
+                damping: robotStatus === 'flying' || robotStatus === 'returning' ? 14 : 18,
+                mass: 0.9
               }}
-              className="fixed w-18 h-18 -ml-9 -mt-9 pointer-events-none z-50 flex items-center justify-center"
+              className="fixed w-20 h-20 -ml-10 -mt-10 pointer-events-none z-50 flex items-center justify-center"
             >
-              <div className="w-[85%] h-[85%]">
+              <div className={`w-[90%] h-[90%] ${
+                robotStatus === 'charging' ? 'animate-shake-tight' :
+                robotStatus === 'firing' ? 'animate-shake-strong' : ''
+              }`}>
                 <GamerRobot 
                   status={robotStatus} 
                   isHeaderAvatar={false} 
-                  gameColorTheme={activeColorTheme.colorCode} 
+                  gameColorTheme={activeAttackGameId ? '#f97316' : activeColorTheme.colorCode} 
                 />
               </div>
 
@@ -600,15 +683,15 @@ export default function App() {
               {(robotStatus === 'targeting' || robotStatus === 'firing') && (
                 <div className="absolute top-full mt-3 flex flex-col items-center">
                   <motion.div 
-                    animate={{ scale: [1, 1.2, 1], rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 2.5, ease: "linear" }}
-                    className="w-10 h-10 rounded-full border border-dashed flex items-center justify-center"
-                    style={{ borderColor: activeColorTheme.colorCode, boxShadow: `0 0 10px ${activeColorTheme.colorCode}22` }}
+                    animate={{ scale: [1, 1.25, 1], rotate: -360 }}
+                    transition={{ repeat: Infinity, duration: 2.2, ease: "linear" }}
+                    className="w-11 h-11 rounded-full border border-dashed flex items-center justify-center"
+                    style={{ borderColor: '#ef4444', boxShadow: `0 0 12px rgba(239, 68, 68, 0.25)` }}
                   >
-                    <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: activeColorTheme.colorCode }} />
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
                   </motion.div>
-                  <span className="text-[6.5px] font-mono mt-1 px-1 bg-black/85 rounded border select-none whitespace-nowrap" style={{ color: activeColorTheme.colorCode, borderColor: `${activeColorTheme.colorCode}44` }}>
-                    LOCK // ACTIVE
+                  <span className="text-[6.5px] font-mono mt-1 px-1.5 py-0.5 bg-black/90 border border-red-500/50 rounded text-red-400 select-none whitespace-nowrap tracking-widest font-black">
+                    🔥 SHENDU FIRE // INCINERATING
                   </span>
                 </div>
               )}
@@ -617,9 +700,9 @@ export default function App() {
         </AnimatePresence>
 
         {/* Minimalist tactical footer */}
-        <footer id="app-footer" className="mt-20 mb-8 border-t border-white/5 pt-8 text-center select-none">
-          <p className="font-mono text-[10px] text-zinc-600 uppercase tracking-[0.35em]">
-            NEO SYSTEM COCKPIT CONFIG PORTFOLIO &copy; {new Date().getFullYear()} // CHANNELS STABLE OVER INTEL GROUND PING
+        <footer id="app-footer" className="mt-20 mb-8 border-t border-slate-800/60 pt-8 text-center select-none">
+          <p className="font-mono text-[10px] text-slate-400 uppercase tracking-[0.35em]">
+            NEO SYSTEM COCKPIT CONFIG PORTFOLIO &copy; {new Date().getFullYear()} — CHANNELS STABLE OVER INTEL GROUND PING
           </p>
         </footer>
 
