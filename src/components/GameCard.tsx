@@ -188,32 +188,40 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
       <div className="p-6 md:p-8 relative z-10">
         
         {/* Upper Title Block */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div 
+        <div className={`flex flex-col ${isActive ? 'items-center text-center w-full' : 'sm:flex-row sm:items-center justify-between'} gap-4 transition-all duration-500`}>
+          <div className={`flex ${isActive ? 'flex-col items-center w-full' : 'flex-row items-center'} gap-4 transition-all duration-500`}>
+            <motion.div 
+              layoutId={`game-icon-container-${game.id}`}
+              layout
+              transition={{ type: "spring", stiffness: 450, damping: 32, mass: 0.7 }}
               id={`game-icon-${game.id}`} 
-              className={`w-14 h-14 rounded-xl border flex items-center justify-center transition duration-500 group-hover:rotate-6 overflow-hidden shrink-0 shadow-md ${colorConfig.iconBg}`}
+              className={`rounded-2xl border flex items-center justify-center overflow-hidden shrink-0 shadow-xl transform-gpu will-change-transform ${
+                isActive ? 'w-32 h-32 md:w-36 md:h-36 scale-105 border-white/60 shadow-[0_0_30px_rgba(255,255,255,0.15)]' : 'w-14 h-14'
+              } ${colorConfig.iconBg}`}
             >
-              <GameIcon gameId={game.id} className="w-[85%] h-[85%]" />
-            </div>
-            <div>
+              <motion.div layout className="w-[85%] h-[85%] flex items-center justify-center transform-gpu will-change-transform">
+                <GameIcon gameId={game.id} className="w-full h-full" />
+              </motion.div>
+            </motion.div>
+            
+            <motion.div layout className={`flex flex-col ${isActive ? 'items-center' : 'items-start'} transition-all duration-500`}>
               <div className="flex items-center gap-2">
-                <h3 id={`game-title-${game.id}`} className="text-xl md:text-2xl old-age-title transition group-hover:text-red-400 duration-300">
+                <motion.h3 layout id={`game-title-${game.id}`} className="text-xl md:text-2xl old-age-title transition group-hover:text-red-400 duration-300">
                   {game.title}
-                </h3>
+                </motion.h3>
                 {isActive && (
                   <span className={`w-1.5 h-1.5 rounded-full ${colorConfig.themeGlow} animate-ping`} />
                 )}
               </div>
-              <p id={`game-tagline-${game.id}`} className="text-[10px] font-mono text-slate-400 uppercase tracking-widest mt-1">
+              <motion.p layout id={`game-tagline-${game.id}`} className="text-[10px] font-mono text-slate-400 uppercase tracking-widest mt-1">
                 {game.tagline}
-              </p>
-            </div>
+              </motion.p>
+            </motion.div>
           </div>
           
-          <span className={`font-mono text-xs font-bold px-3 py-1.5 rounded-md border tracking-widest uppercase shrink-0 text-center shadow-sm ${colorConfig.badgeBg}`}>
+          <motion.span layout className={`font-mono text-xs font-bold px-3 py-1.5 rounded-md border tracking-widest uppercase shrink-0 text-center shadow-sm ${colorConfig.badgeBg} ${isActive ? 'mt-2' : ''}`}>
             {game.badge}
-          </span>
+          </motion.span>
         </div>
 
         {/* Dynamic Horizontal Level Indicator */}
