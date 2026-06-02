@@ -6,8 +6,15 @@
 import { GAMER_PROFILE, GAMES_DATA } from '../data';
 import { Shield, Compass, Swords, Terminal, Radio, Cpu, Activity, UserCheck } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import GamerRobot from './GamerRobot';
 
-export default function GamerHeader() {
+interface GamerHeaderProps {
+  onRobotAttack: () => void;
+  robotStatus: 'idle' | 'charging' | 'flying' | 'targeting' | 'firing' | 'returning';
+  gameColorTheme?: string;
+}
+
+export default function GamerHeader({ onRobotAttack, robotStatus, gameColorTheme = '#00f0ff' }: GamerHeaderProps) {
   const [pulse, setPulse] = useState(true);
   const [timestamp, setTimestamp] = useState<string>('');
 
@@ -60,16 +67,26 @@ export default function GamerHeader() {
         <div className="flex flex-col items-center shrink-0">
           <div className="relative group select-none">
             {/* Spinning hexagonal/isometric aura */}
-            <div className="absolute -inset-2 rounded-full bg-gradient-to-tr from-cyan-500 via-orange-500 to-emerald-500 opacity-80 blur-md group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" />
+            <div className={`absolute -inset-2 rounded-full bg-gradient-to-tr from-cyan-500 via-orange-500 to-emerald-500 opacity-80 blur-md group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 ${robotStatus !== 'idle' ? 'animate-pulse' : ''}`} />
             
-            <div className="relative w-28 h-28 md:w-32 md:h-32 rounded-full bg-slate-950 border-4 border-cyan-500/40 overflow-hidden flex items-center justify-center shadow-[0_0_30px_rgba(0,240,255,0.2)]">
-              <img 
-                id="gamer-avatar"
-                src={GAMER_PROFILE.avatarUrl} 
-                alt={GAMER_PROFILE.primaryUsername} 
-                className="w-full h-full object-cover p-2 hover:rotate-12 transition-all duration-500"
-                referrerPolicy="no-referrer"
-              />
+            <div className="relative w-28 h-28 md:w-32 md:h-32 rounded-full bg-slate-950 border-4 border-cyan-500/40 flex items-center justify-center shadow-[0_0_30px_rgba(0,240,255,0.2)]">
+              {robotStatus === 'idle' || robotStatus === 'charging' ? (
+                <div id="gamer-robot-avatar" className="w-[85%] h-[85%]">
+                  <GamerRobot 
+                    status={robotStatus} 
+                    isHeaderAvatar={true} 
+                    gameColorTheme={gameColorTheme}
+                    onClick={onRobotAttack} 
+                  />
+                </div>
+              ) : (
+                /* Virtual hologram indicating the robot has left its base */
+                <div className="text-center p-2 flex flex-col items-center justify-center select-none">
+                  <Radio className="w-8 h-8 text-cyan-500/40 animate-ping" />
+                  <span className="text-[8px] font-mono text-cyan-400/60 uppercase tracking-widest mt-1.5">DRONE IN FLIGHT</span>
+                  <span className="text-[7px] font-mono text-cyan-500/30">SECTOR ASSAULT</span>
+                </div>
+              )}
               
               {/* Dynamic HUD layout on avatar */}
               <div className="absolute inset-0 border-2 border-dotted border-cyan-400/20 rounded-full animate-[spin_10s_linear_infinite] pointer-events-none" />

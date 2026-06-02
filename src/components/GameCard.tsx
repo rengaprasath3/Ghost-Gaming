@@ -21,6 +21,31 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isSwiping, setIsSwiping] = useState(false);
   const [clickCount, setClickCount] = useState(0);
+  const [isShaking, setIsShaking] = useState(false);
+
+  // Custom Event listener for robot laser attacks
+  useEffect(() => {
+    const handleRobotLaserHit = (e: Event) => {
+      const customEvent = e as CustomEvent<{ targetId: string }>;
+      if (customEvent.detail && customEvent.detail.targetId === game.id) {
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 220);
+
+        if (canvasRef.current && cardRef.current) {
+          const rect = cardRef.current.getBoundingClientRect();
+          // Spawn particle bursts at multiple locations on the card to make it look explosive
+          const attackX = rect.width * (0.2 + Math.random() * 0.6);
+          const attackY = rect.height * (0.25 + Math.random() * 0.35);
+          canvasRef.current.triggerTap(attackX, attackY);
+        }
+      }
+    };
+
+    window.addEventListener('robot-laser-hit', handleRobotLaserHit);
+    return () => {
+      window.removeEventListener('robot-laser-hit', handleRobotLaserHit);
+    };
+  }, [game.id]);
 
   // Manage automated/interactive laser scanner loop
   useEffect(() => {
@@ -102,7 +127,12 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
       ref={cardRef}
       onClick={handleCardClick}
       whileHover={{ y: -4, scale: 1.01 }}
-      transition={{ type: "spring", stiffness: 350, damping: 25 }}
+      animate={isShaking ? {
+        x: [0, -5, 5, -5, 5, -3, 3, 0],
+        y: [0, 3, -3, 3, -3, 2, -2, 0],
+        scale: [1, 0.98, 1.01, 0.99, 1.005, 1],
+      } : {}}
+      transition={isShaking ? { duration: 0.22, ease: "easeInOut" } : { type: "spring", stiffness: 350, damping: 25 }}
       className={`relative overflow-hidden rounded-2xl border bg-black/60 backdrop-blur-xl transition-all duration-500 group cursor-pointer select-none ${
         isActive ? colorConfig.borderActive : colorConfig.borderInactive
       }`}

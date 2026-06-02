@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { GAMES_DATA, GAMER_PROFILE } from './data';
 import GamerHeader from './components/GamerHeader';
 import GameCard from './components/GameCard';
+import GamerRobot from './components/GamerRobot';
 import { GameID } from './types';
 import { 
   Gamepad2, 
@@ -32,6 +33,126 @@ export default function App() {
   const [activeTerminalLogs, setActiveTerminalLogs] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'profile' | 'diagnostics'>('profile');
   const [fps, setFps] = useState<number>(120);
+
+  // Floating robot flight states
+  const [robotStatus, setRobotStatus] = useState<'idle' | 'charging' | 'flying' | 'targeting' | 'firing' | 'returning'>('idle');
+  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+  const [destPos, setDestPos] = useState({ x: 0, y: 0 });
+  const [laserBeams, setLaserBeams] = useState<{ id: number; x1: number; y1: number; x2: number; y2: number }[]>([]);
+
+  // Orchestrator method for combat drone flight
+  const initiateRobotAssault = () => {
+    if (robotStatus !== 'idle') return;
+
+    const avatarEl = document.getElementById('gamer-robot-avatar');
+    const targetEl = document.getElementById(`game-card-${activeGameId}`);
+    if (!avatarEl || !targetEl) {
+      setActiveTerminalLogs(prev => [
+        `ERROR: Robot launching failed. Grid elements obscured or missing coordinates.`,
+        ...prev
+      ]);
+      return;
+    }
+
+    const avatarRect = avatarEl.getBoundingClientRect();
+    const targetRect = targetEl.getBoundingClientRect();
+    const scrollY = window.scrollY;
+    
+    // Calculate precise fixed viewport coordinates for flight paths
+    const startX = avatarRect.left + avatarRect.width / 2;
+    const startY = avatarRect.top + avatarRect.height / 2;
+    const endX = targetRect.left + targetRect.width / 2;
+    const endY = targetRect.top + targetRect.height / 2;
+
+    setStartPos({ x: startX, y: startY });
+    setDestPos({ x: endX, y: endY });
+    setRobotStatus('charging');
+
+    setActiveTerminalLogs(prev => [
+      `SYS_WAR: [WEAPONS CHARGED] - Mini drone weapon core pre-heating...`,
+      ...prev
+    ]);
+
+    // Hold charging animation, then blast-off
+    setTimeout(() => {
+      setRobotStatus('flying');
+      setActiveTerminalLogs(prev => [
+        `COMMAND: Drone detached! Trajectory parameters mapped to target Grid ${activeGameId.toUpperCase()}`,
+        ...prev
+      ]);
+
+      // Flying to lock position (1 second duration)
+      setTimeout(() => {
+        setRobotStatus('targeting');
+        setActiveTerminalLogs(prev => [
+          `TELEMETRY: Robot hovering in action range. Lock-status: ACQUIRED. Lock coordinates: (${Math.floor(endX)}px, ${Math.floor(endY)}px)`,
+          ...prev
+        ]);
+
+        // Targeting sweep (0.7 seconds duration)
+        setTimeout(() => {
+          setRobotStatus('firing');
+          setActiveTerminalLogs(prev => [
+            `FIREPOWER: Railgun lasers firing! Discharging energy onto Grid ${activeGameId.toUpperCase()}`,
+            ...prev
+          ]);
+
+          let pulsesFired = 0;
+          const laserInterval = setInterval(() => {
+            if (pulsesFired >= 6) {
+              clearInterval(laserInterval);
+              setLaserBeams([]);
+              setRobotStatus('returning');
+              setActiveTerminalLogs(prev => [
+                `COMPLETED: Drone assault routine finished. returning to header bay...`,
+                ...prev
+              ]);
+
+              // Flight back to dock
+              setTimeout(() => {
+                setRobotStatus('idle');
+                setActiveTerminalLogs(prev => [
+                  `SYS_LINK: Drone docked. Telemetry signals stable, re-calibrated.`,
+                  ...prev
+                ]);
+              }, 1000);
+              return;
+            }
+
+            // Laser beam lines from dual muzzle positions to target card elements
+            const currentRobotY = endY - 80;
+            const targetXVar = endX - 100 + Math.random() * 200;
+            const targetYVar = endY - 50 + Math.random() * 100;
+
+            setLaserBeams([
+              {
+                id: Math.random(),
+                x1: endX - 12,
+                y1: currentRobotY + 14,
+                x2: targetXVar,
+                y2: targetYVar
+              },
+              {
+                id: Math.random(),
+                x1: endX + 12,
+                y1: currentRobotY + 14,
+                x2: targetXVar,
+                y2: targetYVar
+              }
+            ]);
+
+            // Fire hitting coordinate event
+            window.dispatchEvent(new CustomEvent('robot-laser-hit', { detail: { targetId: activeGameId } }));
+
+            pulsesFired++;
+          }, 180);
+
+        }, 700);
+
+      }, 1000);
+
+    }, 800);
+  };
 
   // Fluctuating FPS simulation ticker
   useEffect(() => {
@@ -134,7 +255,11 @@ export default function App() {
       <div className="max-w-7xl mx-auto relative z-10">
         
         {/* Futuristic Command Header Section */}
-        <GamerHeader />
+        <GamerHeader 
+          onRobotAttack={initiateRobotAssault} 
+          robotStatus={robotStatus} 
+          gameColorTheme={activeColorTheme.colorCode}
+        />
 
         {/* Dynamic Holographic Audio / Spectrum Equalizer Panel */}
         <div 
@@ -376,6 +501,117 @@ export default function App() {
                 Diagnostic analysis indicates highly complex early Queen maneuvers that completely disregard standard chess openings. 
                 Use caution during checkmate coordinates mapping.
               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Laser SVGs drawn absolutely across the entire viewport during firing */}
+        {robotStatus === 'firing' && (
+          <svg className="fixed inset-0 w-full h-full pointer-events-none z-50">
+            {laserBeams.map(laser => (
+              <g key={laser.id}>
+                {/* Thick glow layer */}
+                <line 
+                  x1={laser.x1} 
+                  y1={laser.y1} 
+                  x2={laser.x2} 
+                  y2={laser.y2} 
+                  stroke={activeGameId === 'coc' ? '#ff3c00' : activeGameId === 'bgmi' ? '#00f0ff' : activeGameId === 'pogo' ? '#facc15' : '#10b981'} 
+                  strokeWidth="8" 
+                  strokeLinecap="round" 
+                  opacity="0.85"
+                  className="blur-sm"
+                />
+                {/* Crisp core rail beam */}
+                <line 
+                  x1={laser.x1} 
+                  y1={laser.y1} 
+                  x2={laser.x2} 
+                  y2={laser.y2} 
+                  stroke="#ffffff" 
+                  strokeWidth="3.5" 
+                  strokeLinecap="round" 
+                />
+                {/* Spark splash ring */}
+                <circle cx={laser.x2} cy={laser.y2} r="14" fill="none" stroke="#ffffff" strokeWidth="2" className="animate-ping" opacity="0.6" />
+                <circle cx={laser.x2} cy={laser.y2} r="6" fill={activeColorTheme.colorCode} className="animate-pulse" />
+              </g>
+            ))}
+          </svg>
+        )}
+
+        {/* Floating Tactical Combat Drone in viewport flight */}
+        <AnimatePresence>
+          {robotStatus !== 'idle' && (
+            <motion.div
+              id="flying-combat-drone"
+              initial={{ x: startPos.x, y: startPos.y, scale: 0.2, opacity: 0 }}
+              animate={
+                robotStatus === 'charging' ? {
+                  x: [startPos.x, startPos.x - 4, startPos.x + 4, startPos.x - 2, startPos.x + 2, startPos.x],
+                  y: [startPos.y, startPos.y - 2, startPos.y + 2, startPos.y - 1, startPos.y + 1, startPos.y],
+                  scale: 0.9,
+                  opacity: 0.9,
+                  rotate: 0
+                } : robotStatus === 'flying' ? {
+                  x: destPos.x,
+                  y: destPos.y - 80,
+                  scale: 1.25,
+                  opacity: 1,
+                  rotate: 15
+                } : robotStatus === 'targeting' ? {
+                  x: destPos.x,
+                  y: [destPos.y - 80, destPos.y - 84, destPos.y - 78, destPos.y - 80],
+                  scale: 1.3,
+                  opacity: 1,
+                  rotate: 0
+                } : robotStatus === 'firing' ? {
+                  x: [destPos.x - 2, destPos.x + 2, destPos.x - 1, destPos.x + 1, destPos.x],
+                  y: [destPos.y - 81, destPos.y - 79, destPos.y - 80, destPos.y - 82, destPos.y - 80],
+                  scale: 1.35,
+                  opacity: 1,
+                  rotate: [0, -1, 1, -1, 1, 0]
+                } : robotStatus === 'returning' ? {
+                  x: [destPos.x, startPos.x],
+                  y: [destPos.y - 80, startPos.y],
+                  scale: [1.3, 0.4],
+                  opacity: [1, 0.2],
+                  rotate: -25
+                } : { x: startPos.x, y: startPos.y }
+              }
+              exit={{ scale: 0.1, opacity: 0 }}
+              transition={{
+                type: "spring",
+                stiffness: robotStatus === 'flying' || robotStatus === 'returning' ? 140 : 250,
+                damping: robotStatus === 'flying' || robotStatus === 'returning' ? 16 : 22,
+                duration: robotStatus === 'returning' ? 0.9 : undefined
+              }}
+              className="fixed w-18 h-18 -ml-9 -mt-9 pointer-events-none z-50 flex items-center justify-center"
+            >
+              <div className="w-[85%] h-[85%]">
+                <GamerRobot 
+                  status={robotStatus} 
+                  isHeaderAvatar={false} 
+                  gameColorTheme={activeColorTheme.colorCode} 
+                />
+              </div>
+
+              {/* Holographic HUD reticle projected beneath when locked */}
+              {(robotStatus === 'targeting' || robotStatus === 'firing') && (
+                <div className="absolute top-full mt-3 flex flex-col items-center">
+                  <motion.div 
+                    animate={{ scale: [1, 1.2, 1], rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 2.5, ease: "linear" }}
+                    className="w-10 h-10 rounded-full border border-dashed flex items-center justify-center"
+                    style={{ borderColor: activeColorTheme.colorCode, boxShadow: `0 0 10px ${activeColorTheme.colorCode}22` }}
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: activeColorTheme.colorCode }} />
+                  </motion.div>
+                  <span className="text-[6.5px] font-mono mt-1 px-1 bg-black/85 rounded border select-none whitespace-nowrap" style={{ color: activeColorTheme.colorCode, borderColor: `${activeColorTheme.colorCode}44` }}>
+                    LOCK // ACTIVE
+                  </span>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
