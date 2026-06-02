@@ -59,7 +59,7 @@ export default function GamerHeader({ onRobotAttack, robotStatus = 'idle', gameC
   return (
     <div 
       id="gamer-header-container" 
-      className="relative overflow-hidden rounded-2xl border border-white/20 bg-[#0c0e1a]/95 p-6 md:p-8 backdrop-blur-xl mb-8 shadow-[0_12px_45px_rgba(0,0,0,0.35)]"
+      className="relative overflow-hidden rounded-2xl border border-white/20 bg-[#0c0e1a]/95 p-4 sm:p-6 md:p-8 backdrop-blur-xl mb-8 shadow-[0_12px_45px_rgba(0,0,0,0.35)]"
     >
       {/* Glitch Overlay Laser Lines */}
       <div className="absolute inset-0 scanlines opacity-5 pointer-events-none z-0" />
@@ -157,7 +157,7 @@ export default function GamerHeader({ onRobotAttack, robotStatus = 'idle', gameC
             </h4>
  
             {/* Beautiful responsive badges listing exact target usernames of the user */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
               {GAMES_DATA.map((game, key) => {
                 const accConfig = {
                   'coc': { user: 'Renga', label: 'Clash of Clans', status: 'tamilanda', color: 'border-red-500/30 text-red-400 bg-red-950/20 hover:bg-red-950/40' },
@@ -169,7 +169,7 @@ export default function GamerHeader({ onRobotAttack, robotStatus = 'idle', gameC
                 return (
                   <div 
                     key={key} 
-                    className={`border p-3 rounded-xl transition duration-300 hover:scale-[1.02] flex flex-col justify-between ${accConfig.color}`}
+                    className={`border p-2 sm:p-3 rounded-lg sm:rounded-xl transition duration-300 hover:scale-[1.02] flex flex-col justify-between ${accConfig.color}`}
                   >
                     <div className="flex items-center justify-between text-[9px] uppercase tracking-wider font-mono opacity-80 gap-2">
                       <span className="truncate">{accConfig.label}</span>

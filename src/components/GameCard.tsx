@@ -133,8 +133,8 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
       ref={cardRef}
       onClick={handleCardClick}
       whileHover={{ y: -4, scale: 1.015 }}
-      transition={{ type: "spring", stiffness: 400, damping: 28 }}
-      className={`relative overflow-hidden rounded-2xl border transition-all duration-500 group cursor-pointer select-none gpu-accelerated transform-gpu ${
+      transition={{ type: "spring", stiffness: 120, damping: 20 }}
+      className={`relative overflow-hidden rounded-2xl border transition-all duration-[1200ms] group cursor-pointer select-none gpu-accelerated transform-gpu ${
         isActive ? colorConfig.borderActive : colorConfig.borderInactive
       } ${isShaking ? 'animate-card-shake' : ''}`}
     >
@@ -185,15 +185,15 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
 
 
 
-      <div className="p-6 md:p-8 relative z-10">
+      <div className="p-4 sm:p-6 md:p-8 relative z-10">
         
         {/* Upper Title Block */}
-        <div className={`flex flex-col ${isActive ? 'items-center text-center w-full' : 'sm:flex-row sm:items-center justify-between'} gap-4 transition-all duration-500`}>
-          <div className={`flex ${isActive ? 'flex-col items-center w-full' : 'flex-row items-center'} gap-4 transition-all duration-500`}>
+        <div className={`flex flex-col ${isActive ? 'items-center text-center w-full' : 'sm:flex-row sm:items-center justify-between'} gap-4 transition-all duration-[1200ms]`}>
+          <div className={`flex ${isActive ? 'flex-col items-center w-full' : 'flex-row items-center'} gap-4 transition-all duration-[1200ms]`}>
             <motion.div 
               layoutId={`game-icon-container-${game.id}`}
               layout
-              transition={{ type: "spring", stiffness: 450, damping: 32, mass: 0.7 }}
+              transition={{ type: "spring", stiffness: 45, damping: 15, mass: 1.2 }}
               id={`game-icon-${game.id}`} 
               className={`rounded-2xl border flex items-center justify-center overflow-hidden shrink-0 shadow-xl transform-gpu will-change-transform ${
                 isActive ? 'w-32 h-32 md:w-36 md:h-36 scale-105 border-white/60 shadow-[0_0_30px_rgba(255,255,255,0.15)]' : 'w-14 h-14'
@@ -204,7 +204,7 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
               </motion.div>
             </motion.div>
             
-            <motion.div layout className={`flex flex-col ${isActive ? 'items-center' : 'items-start'} transition-all duration-500`}>
+            <motion.div layout className={`flex flex-col ${isActive ? 'items-center' : 'items-start'} transition-all duration-[1200ms]`}>
               <div className="flex items-center gap-2">
                 <motion.h3 layout id={`game-title-${game.id}`} className="text-xl md:text-2xl old-age-title transition group-hover:text-red-400 duration-300">
                   {game.title}
@@ -227,17 +227,17 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
         {/* Dynamic Horizontal Level Indicator */}
         <div className="mt-6 w-full bg-[#05060d] border border-zinc-800 h-[5px] rounded-full overflow-hidden relative">
           <div 
-            className={`h-full rounded-full transition-all duration-700 ${colorConfig.themeGlow}`}
+            className={`h-full rounded-full transition-all duration-[1500ms] ${colorConfig.themeGlow}`}
             style={{ width: isActive ? '100%' : '25%' }}
           />
         </div>
 
         {/* Major Stat Widgets Row */}
-        <div className="grid grid-cols-3 gap-3.5 mt-5">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3.5 mt-5">
           {game.mainStats.map((stat, idx) => (
             <div 
               key={idx} 
-              className={`border p-3 rounded-xl text-center backdrop-blur-md transition-all duration-300 ${
+              className={`border p-2 sm:p-3 rounded-lg sm:rounded-xl text-center backdrop-blur-md transition-all duration-300 ${
                 isActive ? 'bg-[#121426]/90 border-zinc-700/60 shadow-md' : 'bg-[#090b14]/75 border-zinc-800/80 group-hover:border-zinc-700'
               }`}
             >
@@ -258,7 +258,7 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 26 }}
+              transition={{ type: "spring", stiffness: 40, damping: 15, mass: 1.2 }}
               className="overflow-hidden"
             >
               <div className="mt-8 pt-6 border-t border-zinc-800/80">

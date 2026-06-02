@@ -14,9 +14,10 @@
   --color-chess-green: #991b1b;
 }
 
-html {
-  scroll-behavior: smooth;
+html, body {
+  scroll-behavior: auto;
   scroll-padding-top: 1.5rem;
+  will-change: transform;
 }
 
 /* Custom old age / ancient aesthetic high contrast utilities */

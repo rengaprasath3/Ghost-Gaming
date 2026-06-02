@@ -40,51 +40,69 @@ export default function App() {
   const activeGameIdRef = useRef<GameID>('coc');
   const scrollAnimationRef = useRef<number | null>(null);
 
-  // Custom step-by-step 120Hz/120FPS smooth scrolling engine with ease-in-out human inertia timing
-  const inertialScrollTo = (targetElementId: string, duration: number = 1000) => {
+  // High fidelity spring-physics 120Hz smooth scrolling engine tracking dynamic element center coordinates
+  const inertialScrollTo = (targetElementId: string, _duration: number = 1000, onComplete?: () => void) => {
     const element = document.getElementById(targetElementId);
-    if (!element) return;
+    if (!element) {
+      if (onComplete) onComplete();
+      return;
+    }
 
     if (scrollAnimationRef.current !== null) {
       cancelAnimationFrame(scrollAnimationRef.current);
     }
 
-    const startY = window.scrollY;
-    
-    // Calculate centering coordinate relative to browser viewport bounds under GPU transformation layers
-    const rect = element.getBoundingClientRect();
-    const elementDocTop = rect.top + window.scrollY;
-    const viewportHeight = window.innerHeight;
-    const targetY = Math.max(0, Math.min(
-      elementDocTop - (viewportHeight / 2) + (rect.height / 2),
-      document.documentElement.scrollHeight - viewportHeight
-    ));
+    let y = window.scrollY;
+    let vy = 0;
+    let lastFrameTime = performance.now();
 
-    const distance = targetY - startY;
-    if (Math.abs(distance) < 1.5) return; // ignore subpixel noise
+    // Slower, weighted kinetic parameters for velvety smooth slow-scroll inertia and gradual settle
+    const stiffness = 22;  // Low tension to significantly slow down the movement
+    const damping = 11;    // High damping-to-stiffness ratio to prevent bouncing and settle gently
+    const mass = 1.8;      // Higher mass increases kinetic inertia, slowing down acceleration
 
-    const startTime = performance.now();
+    const animateScrollStep = (currentTime: number) => {
+      let dt = (currentTime - lastFrameTime) / 1000;
+      // Safeguard against layout freezing or background tab context pausing
+      if (dt > 0.08) dt = 0.08;
+      // Also prevent dt from being 0 on instant callbacks
+      if (dt <= 0) dt = 0.008;
+      lastFrameTime = currentTime;
 
-    // High performance ease-in-out timing function to mimic human kinetic inertia
-    const easeInOutCubic = (t: number): number => {
-      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    };
-
-    const animateScroll = (currentTime: number) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
+      const rect = element.getBoundingClientRect();
+      const elementDocTop = rect.top + window.scrollY;
+      const viewportHeight = window.innerHeight;
       
-      const ease = easeInOutCubic(progress);
-      window.scrollTo(0, startY + distance * ease);
+      // Calculate real-time center to track live Framer Motion/CSS layout expansion transitions
+      const targetY = Math.max(0, Math.min(
+        elementDocTop - (viewportHeight / 2) + (rect.height / 2),
+        document.documentElement.scrollHeight - viewportHeight
+      ));
 
-      if (progress < 1) {
-        scrollAnimationRef.current = requestAnimationFrame(animateScroll);
-      } else {
+      const diff = targetY - y;
+
+      // Settle thresholds for smooth, noise-free arrest
+      if (Math.abs(diff) < 0.25 && Math.abs(vy) < 0.25) {
+        window.scrollTo(0, targetY);
         scrollAnimationRef.current = null;
+        if (onComplete) onComplete();
+        return;
       }
+
+      // spring force: F = -k * x - c * v
+      const springForce = diff * stiffness;
+      const dampingForce = vy * damping;
+      const acceleration = (springForce - dampingForce) / mass;
+
+      vy += acceleration * dt;
+      y += vy * dt;
+
+      window.scrollTo(0, y);
+
+      scrollAnimationRef.current = requestAnimationFrame(animateScrollStep);
     };
 
-    scrollAnimationRef.current = requestAnimationFrame(animateScroll);
+    scrollAnimationRef.current = requestAnimationFrame(animateScrollStep);
   };
 
   useEffect(() => {
@@ -208,10 +226,9 @@ export default function App() {
 
       // Smoothly scroll the card element to center via 120 FPS inertial engine
       isScrollingLockedRef.current = true;
-      inertialScrollTo(`game-card-${targetId}`, 1000);
-      setTimeout(() => {
+      inertialScrollTo(`game-card-${targetId}`, 1000, () => {
         isScrollingLockedRef.current = false;
-      }, 1050);
+      });
 
       setRobotStatus('flying');
       setActiveAttackGameId(null);
@@ -343,15 +360,23 @@ export default function App() {
 
     // Track scroll events to log live 120FPS rendering telemetry logs
     let lastScrollTime = 0;
+    let telemetryTicking = false;
     const handleScrollTelemetry = () => {
-      const now = Date.now();
-      if (now - lastScrollTime > 3000) {
-        setActiveTerminalLogs(prev => [
-          `PERF_MONITOR: Hardware GPU layers synced at 120 FPS. Scroll transform cost: 0.12ms.`,
-          ...prev.slice(0, 8)
-        ]);
-        lastScrollTime = now;
-      }
+      if (telemetryTicking) return;
+      telemetryTicking = true;
+
+      window.requestAnimationFrame(() => {
+        telemetryTicking = false;
+        const now = Date.now();
+        if (now - lastScrollTime > 3000) {
+          setActiveTerminalLogs(prev => [
+            `PERF_MONITOR: Hardware GPU layers synced at 120 FPS. Scroll transform cost: 0.12ms.`,
+            ...prev.slice(0, 8)
+          ]);
+          lastScrollTime = now;
+          telemetryTicking = false;
+        }
+      });
     };
 
     window.addEventListener('scroll', handleScrollTelemetry, { passive: true });
@@ -433,7 +458,7 @@ export default function App() {
   }[activeGameId];
 
   return (
-    <div className="min-h-screen bg-cyber-bg text-slate-100 selection:bg-red-600 selection:text-white font-sans relative overflow-x-hidden p-4 md:p-8">
+    <div className="min-h-screen bg-cyber-bg text-slate-100 selection:bg-red-600 selection:text-white font-sans relative overflow-x-hidden p-2.5 sm:p-5 md:p-8">
       
       {/* Background aesthetics */}
       <div className="absolute inset-0 cyber-grid opacity-65 pointer-events-none z-0" />
@@ -508,12 +533,9 @@ export default function App() {
                     ]);
 
                     // Smoothly scroll target element to viewport center via 120 FPS inertial engine
-                    inertialScrollTo(`game-card-${game.id}`, 1000);
-
-                    // Let the accordion expansion animation complete before unlocking auto-scroll focus
-                    setTimeout(() => {
+                    inertialScrollTo(`game-card-${game.id}`, 1000, () => {
                       isScrollingLockedRef.current = false;
-                    }, 900);
+                    });
                   }}
                 />
               ))}
