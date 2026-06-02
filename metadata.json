@@ -1,0 +1,6 @@
+{
+  "name": "Gamer Profile Showcase",
+  "description": "An interactive cyberpunk-themed gamer profile showcase featuring rich canvas particle animations and stats for various competitive games.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
