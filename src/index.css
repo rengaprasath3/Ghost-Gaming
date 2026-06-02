@@ -6,40 +6,47 @@
   --font-display: "Fredoka", "Funhouse", "Space Grotesk", sans-serif;
   --font-mono: "Fredoka", "Funhouse", "JetBrains Mono", monospace;
   
-  --color-cyber-bg: #070913;
-  --color-cyber-card: #0d0e19;
-  --color-coc-orange: #f97316;
-  --color-bgmi-cyan: #06b6d4;
-  --color-pogo-yellow: #eab308;
-  --color-chess-green: #10b981;
+  --color-cyber-bg: #080505;
+  --color-cyber-card: #150f10;
+  --color-coc-orange: #ef4444;
+  --color-bgmi-cyan: #be123c;
+  --color-pogo-yellow: #a81a1a;
+  --color-chess-green: #991b1b;
 }
 
-/* Custom cyberpunk utilities optimized for dark high-contrast theme */
+/* Custom old age / ancient aesthetic high contrast utilities */
 @layer utilities {
+  .old-age-title {
+    font-family: 'Fredoka', 'Funhouse', sans-serif !important;
+    font-weight: 700 !important;
+    color: #E8F5E9 !important;
+    text-shadow: 2px 2px 0px #3E2723 !important;
+  }
+
   .glow-coc {
-    text-shadow: 0 0 12px rgba(249, 115, 22, 0.65), 0 0 25px rgba(249, 115, 22, 0.25);
+    text-shadow: 0 0 12px rgba(239, 68, 68, 0.75), 0 0 25px rgba(239, 68, 68, 0.35);
   }
   .glow-bgmi {
-    text-shadow: 0 0 12px rgba(6, 182, 212, 0.65), 0 0 25px rgba(6, 182, 212, 0.25);
+    text-shadow: 0 0 12px rgba(190, 18, 60, 0.75), 0 0 25px rgba(190, 18, 60, 0.35);
   }
   .glow-pogo {
-    text-shadow: 0 0 12px rgba(234, 179, 8, 0.65), 0 0 25px rgba(234, 179, 8, 0.25);
+    text-shadow: 0 0 12px rgba(168, 26, 26, 0.75), 0 0 25px rgba(168, 26, 26, 0.35);
   }
   .glow-chess {
-    text-shadow: 0 0 12px rgba(16, 185, 129, 0.65), 0 0 25px rgba(16, 185, 129, 0.25);
+    text-shadow: 0 0 12px rgba(153, 27, 27, 0.75), 0 0 25px rgba(153, 27, 27, 0.35);
   }
   
   .border-glow-coc {
-    box-shadow: 0 4px 25px rgba(249, 115, 22, 0.25), inset 0 0 12px rgba(249, 115, 22, 0.1);
+    box-shadow: 0 4px 25px rgba(239, 68, 68, 0.3), inset 0 0 12px rgba(239, 68, 68, 0.15);
   }
   .border-glow-bgmi {
-    box-shadow: 0 4px 25px rgba(6, 182, 212, 0.25), inset 0 0 12px rgba(6, 182, 212, 0.1);
+    box-shadow: 0 4px 25px rgba(190, 18, 60, 0.3), inset 0 0 12px rgba(190, 18, 60, 0.15);
   }
   .border-glow-pogo {
-    box-shadow: 0 4px 25px rgba(234, 179, 8, 0.25), inset 0 0 12px rgba(234, 179, 8, 0.1);
+    box-shadow: 0 4px 25px rgba(168, 26, 26, 0.3), inset 0 0 12px rgba(168, 26, 26, 0.15);
   }
   .border-glow-chess {
-    box-shadow: 0 4px 25px rgba(16, 185, 129, 0.25), inset 0 0 12px rgba(16, 185, 129, 0.1);
+    box-shadow: 0 4px 25px rgba(153, 27, 27, 0.3), inset 0 0 12px rgba(153, 27, 27, 0.15);
   }
 }
 
@@ -61,16 +68,16 @@
 }
 
 @keyframes card-shake-heavy {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  12% { transform: translate(-3px, 2.5px) rotate(-1.5deg); }
-  28% { transform: translate(2.5px, -2px) rotate(1.2deg); }
-  45% { transform: translate(-2.5px, -1.5px) rotate(-1.2deg); }
-  65% { transform: translate(3px, 1.8px) rotate(1.5deg); }
-  85% { transform: translate(-1.5px, 1px) rotate(-0.5deg); }
+  5% { transform: translate(-3px, 2.5px) rotate(-1.5deg); }
+  15% { transform: translate(2.5px, -2px) rotate(1.2deg); }
+  25% { transform: translate(-2.5px, -1.5px) rotate(-1.2deg); }
+  35% { transform: translate(3px, 1.8px) rotate(1.5deg); }
+  45% { transform: translate(-1.5px, 1px) rotate(-0.5deg); }
+  50%, 100% { transform: translate(0, 0) rotate(0deg); }
 }
 
 .animate-card-shake {
-  animation: card-shake-heavy 0.2s ease-in-out;
+  animation: card-shake-heavy 0.3s ease-in-out;
 }
 
 .animate-shake-tight {
@@ -81,51 +88,52 @@
   animation: shake-strong 0.08s infinite;
 }
 
-/* Dark Cyber grid effects */
+/* Mystical red-tinted grid effects for ancient ritual look */
 .cyber-grid {
-  background-size: 40px 40px;
-  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 36px 36px;
+  background-image: linear-gradient(to right, rgba(239, 68, 68, 0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(239, 68, 68, 0.05) 1px, transparent 1px);
 }
 
 .scanlines {
   background: linear-gradient(
-    rgba(18, 18, 24, 0) 50%, 
-    rgba(18, 18, 24, 0.25) 50%
+    rgba(15, 10, 10, 0) 50%, 
+    rgba(15, 10, 10, 0.3) 50%
   ), linear-gradient(
     90deg, 
-    rgba(239, 68, 68, 0.03), 
-    rgba(16, 185, 129, 0.02), 
-    rgba(6, 182, 212, 0.03)
+    rgba(220, 38, 38, 0.035), 
+    rgba(185, 28, 28, 0.02), 
+    rgba(153, 27, 27, 0.03)
   );
   background-size: 100% 4px, 6px 100%;
 }
 
-/* Scrollbar tuning for dark tactical structure */
+/* Scrollbar tuning for dark wood structure */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #02040a;
+  background: #0d0909;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1f293d;
-  border-radius: 4px;
+  background: #2a1616;
+  border: 2px solid #0d0909;
+  border-radius: 6px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #38bdf8;
+  background: #b91c1c;
 }
 
 @keyframes glitch {
   0% { transform: translate(0) }
   20% { transform: translate(-2px, 2px) }
-  40% { transform: translate(-2px, -2px) }
-  60% { transform: translate(2px, 2px) }
-  80% { transform: translate(2px, -2px) }
+  45% { transform: translate(-2px, -2px) }
+  65% { transform: translate(2px, 2px) }
+  85% { transform: translate(2px, -2px) }
   100% { transform: translate(0) }
 }
 
 .glitch-hover:hover {
-  animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+  animation: glitch 0.35s cubic-bezier(.25, .46, .45, .94) both infinite;
 }

@@ -9,6 +9,7 @@ import GamerHeader from './components/GamerHeader';
 import GameCard from './components/GameCard';
 import GamerRobot from './components/GamerRobot';
 import { GameID } from './types';
+import { playSound } from './audio';
 import { 
   Gamepad2, 
   Activity, 
@@ -139,6 +140,7 @@ export default function App() {
           setRobotStatus('firing');
           setActiveAttackGameId(targetId);
           updateDestPosition();
+          playSound('fire');
           setActiveTerminalLogs(prev => [
             `FIREPOWER: 🔥 Shendu unleashing hellfire breath onto Sector ${targetId.toUpperCase()}! Base databases under severe fire!`,
             ...prev
@@ -232,6 +234,7 @@ export default function App() {
 
   const handleResetAll = () => {
     setActiveGameId('coc');
+    playSound('reboot');
     setActiveTerminalLogs([
       "CORE_LINK: Reset sequence verified by terminal user Renga.",
       "SYS: Restored primary TownHall 18 state matrices..."
@@ -241,31 +244,31 @@ export default function App() {
   // Sound spectrum configurations
   const activeColorTheme = {
     'coc': {
-      text: 'text-orange-400',
-      borderGlow: 'border-orange-500/35 bg-[#121625]/90 shadow-[0_12px_45px_rgba(249,115,22,0.18)]',
+      text: 'text-red-400',
+      borderGlow: 'border-red-650/35 bg-[#0e0607]/90 shadow-[0_12px_45px_rgba(239,68,68,0.18)]',
       label: 'COC // RETRIEVED: Renga',
-      colorCode: '#f97316',
+      colorCode: '#ef4444',
       soundFrequency: [12, 18, 25, 42, 60, 48, 30, 20, 36, 12, 38, 55, 40, 18, 5]
     },
     'bgmi': {
-      text: 'text-cyan-400',
-      borderGlow: 'border-cyan-500/35 bg-[#121625]/90 shadow-[0_12px_45px_rgba(6,182,212,0.18)]',
+      text: 'text-red-500',
+      borderGlow: 'border-red-700/35 bg-[#0e0607]/90 shadow-[0_12px_45px_rgba(190,18,60,0.18)]',
       label: 'BGMI // RETRIEVED: Clown Ghost',
-      colorCode: '#06b6d4',
+      colorCode: '#be123c',
       soundFrequency: [30, 48, 62, 75, 40, 25, 58, 68, 72, 85, 44, 30, 60, 48, 25]
     },
     'pogo': {
-      text: 'text-yellow-400',
-      borderGlow: 'border-yellow-500/35 bg-[#121625]/90 shadow-[0_12px_45px_rgba(250,204,21,0.18)]',
+      text: 'text-amber-550 text-amber-500',
+      borderGlow: 'border-amber-600/35 bg-[#0e0607]/90 shadow-[0_12px_45px_rgba(217,119,6,0.18)]',
       label: 'POGO // RETRIEVED: Rengaprasath',
-      colorCode: '#facc15',
+      colorCode: '#d97706',
       soundFrequency: [18, 28, 48, 32, 15, 45, 60, 40, 55, 65, 38, 25, 48, 20, 12]
     },
     'chess': {
-      text: 'text-emerald-400',
-      borderGlow: 'border-emerald-500/35 bg-[#121625]/90 shadow-[0_12px_45px_rgba(16,185,129,0.18)]',
+      text: 'text-red-500',
+      borderGlow: 'border-red-800/35 bg-[#0e0607]/90 shadow-[0_12px_45px_rgba(153,27,27,0.18)]',
       label: 'CHESS // RETRIEVED: Renga',
-      colorCode: '#10b981',
+      colorCode: '#991b1b',
       soundFrequency: [5, 12, 18, 24, 30, 35, 40, 42, 38, 30, 24, 18, 12, 6, 2]
     }
   }[activeGameId];
@@ -279,27 +282,27 @@ export default function App() {
   }[activeGameId];
 
   return (
-    <div className="min-h-screen bg-[#070a13] text-slate-100 selection:bg-cyan-500 selection:text-white font-sans relative overflow-x-hidden p-4 md:p-8">
+    <div className="min-h-screen bg-cyber-bg text-slate-100 selection:bg-red-600 selection:text-white font-sans relative overflow-x-hidden p-4 md:p-8">
       
       {/* Background aesthetics */}
-      <div className="absolute inset-0 cyber-grid opacity-60 pointer-events-none z-0" />
+      <div className="absolute inset-0 cyber-grid opacity-65 pointer-events-none z-0" />
       <div className="absolute inset-0 scanlines opacity-10 pointer-events-none z-0" />
       
       {/* Dynamic drifting background glows */}
-      <div className="absolute top-1/4 left-1/4 w-[450px] h-[450px] bg-cyan-500/8 rounded-full blur-[110px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-orange-500/8 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/4 w-[450px] h-[450px] bg-red-600/5 rounded-full blur-[110px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-[#3e0809]/10 rounded-full blur-[130px] pointer-events-none" />
 
       {/* Futuristic Fixed Navigation pillars & decorative rails */}
-      <div className="fixed left-3 top-1/2 -translate-y-1/2 writing-mode-vertical hidden xl:flex flex-col items-center gap-3.5 font-mono text-[9px] text-slate-500 uppercase tracking-[0.35em] pointer-events-none select-none z-30">
-        <Cpu className="w-3.5 h-3.5 text-cyan-400" />
-        <span>NEO COCKPIT PORTFOLIO // VER 2.4</span>
-        <span className="w-[1.5px] h-24 bg-gradient-to-b from-cyan-400/20 to-transparent" />
+      <div className="fixed left-3 top-1/2 -translate-y-1/2 writing-mode-vertical hidden xl:flex flex-col items-center gap-3.5 font-mono text-[9px] text-red-500 uppercase tracking-[0.35em] pointer-events-none select-none z-30">
+        <Cpu className="w-3.5 h-3.5 text-red-500" />
+        <span>ANCIENT COCKPIT PORTFOLIO // SS9</span>
+        <span className="w-[1.5px] h-24 bg-gradient-to-b from-red-650/40 to-transparent" />
       </div>
 
-      <div className="fixed right-3 top-1/2 -translate-y-1/2 writing-mode-vertical hidden xl:flex flex-col items-center gap-3.5 font-mono text-[9px] text-slate-500 uppercase tracking-[0.35em] pointer-events-none select-none z-30">
+      <div className="fixed right-3 top-1/2 -translate-y-1/2 writing-mode-vertical hidden xl:flex flex-col items-center gap-3.5 font-mono text-[9px] text-red-500 uppercase tracking-[0.35em] pointer-events-none select-none z-30">
         <span>STABLE EMULATION COMPILED</span>
-        <span className="w-[1.5px] h-24 bg-gradient-to-b from-orange-400/20 to-transparent" />
-        <Activity className="w-3.5 h-3.5 text-orange-400" />
+        <span className="w-[1.5px] h-24 bg-gradient-to-b from-red-650/40 to-transparent" />
+        <Activity className="w-3.5 h-3.5 text-red-500" />
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
@@ -373,11 +376,11 @@ export default function App() {
               onClick={() => setSoundEnabled(!soundEnabled)}
               className={`flex items-center gap-2 font-mono text-xs border rounded-xl px-4 py-2 transition-all duration-300 ${
                 soundEnabled 
-                  ? 'bg-slate-900 border-cyan-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.3)]' 
-                  : 'bg-[#121625]/80 border-slate-800 text-slate-400 hover:text-slate-200'
+                  ? 'bg-slate-900 border-red-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.3)]' 
+                  : 'bg-[#12090a]/80 border-red-950 text-slate-400 hover:text-slate-200'
               }`}
             >
-              <Volume2 className="w-4 h-4 text-cyan-400" />
+              <Volume2 className="w-4 h-4 text-red-500" />
               <span>FX EQUALIZER: {soundEnabled ? 'HUD ON' : 'MUTED'}</span>
             </button>
 
@@ -385,9 +388,9 @@ export default function App() {
             <button 
               id="console-hard-reboot"
               onClick={handleResetAll}
-              className="flex items-center gap-2 font-mono text-xs border border-slate-800 bg-[#121625]/80 hover:border-cyan-505 hover:border-cyan-500 hover:bg-cyan-500/10 transition-all duration-300 rounded-xl px-4 py-2 text-slate-300"
+              className="flex items-center gap-2 font-mono text-xs border border-red-950 bg-[#12090a]/80 hover:border-red-500 hover:bg-red-500/10 transition-all duration-300 rounded-xl px-4 py-2 text-slate-300"
             >
-              <RefreshCw className="w-4 h-4 text-cyan-500 animate-spin-slow" />
+              <RefreshCw className="w-4 h-4 text-red-500 animate-spin-slow" />
               <span>REBOOT MATRIX</span>
             </button>
           </div>
@@ -398,10 +401,10 @@ export default function App() {
           
           {/* Main Games Portfolio Cards (occupies 8 columns on desktop) */}
           <div id="games-grid-wrapper" className="lg:col-span-8 flex flex-col gap-6">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center justify-between border-b border-red-950/80 pb-3">
               <h3 className="font-display font-extrabold tracking-wider text-sm md:text-base flex items-center gap-2 text-white">
-                <Gamepad2 className="w-5 h-5 text-cyan-600" />
-                <span>GAMES DIRECTORY & PROFILE PORTAL</span>
+                <Gamepad2 className="w-5 h-5 text-red-600 animate-pulse" />
+                <span className="old-age-title text-sm md:text-base">GAMES DIRECTORY & PROFILE PORTAL</span>
               </h3>
               <span className="font-mono text-[10px] text-slate-400">
                 TOTAL INTEGRATIONS: 4 // OPERATOR STATE: OK
@@ -431,25 +434,25 @@ export default function App() {
           <div id="control-terminal-pillar" className="lg:col-span-4 flex flex-col gap-6 lg:sticky lg:top-8">
             
             {/* Live Performance System Diagnostics Tracker */}
-            <div className="rounded-2xl border border-slate-800/90 bg-[#121625]/90 p-5 shadow-[0_8px_25px_rgba(0,0,0,0.15)] relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-[40px] pointer-events-none" />
-              <div className="absolute top-0 left-0 w-3 h-[3px] bg-cyan-500" />
-              <div className="absolute top-0 left-0 w-[3px] h-3 bg-cyan-500" />
+            <div className="rounded-2xl border border-red-950/80 bg-[#12090a]/90 p-5 shadow-[0_8px_25px_rgba(0,0,0,0.15)] relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full blur-[40px] pointer-events-none" />
+              <div className="absolute top-0 left-0 w-3 h-[3px] bg-red-650" />
+              <div className="absolute top-0 left-0 w-[3px] h-3 bg-red-650" />
               
-              <h4 className="font-display font-black text-xs uppercase tracking-widest text-slate-200 mb-4 pb-2 border-b border-[#1f293d] flex items-center justify-between">
-                <span>SYSTEM PERFORMANCE</span>
-                <Sliders className="w-4 h-4 text-cyan-500 animate-pulse" />
+              <h4 className="font-display font-black text-xs uppercase tracking-widest text-slate-200 mb-4 pb-2 border-b border-red-950/80 flex items-center justify-between">
+                <span className="old-age-title text-xs">SYSTEM PERFORMANCE</span>
+                <Sliders className="w-4 h-4 text-red-500 animate-pulse" />
               </h4>
               <div className="space-y-4">
                 {/* 120 FPS Metric */}
                 <div>
                   <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 mb-1">
                     <span>DYNAMIC REACTION SPEED</span>
-                    <strong className="text-cyan-400 text-xs font-black">{fps} FPS</strong>
+                    <strong className="text-red-400 text-xs font-black">{fps} FPS</strong>
                   </div>
                   <div className="w-full h-1.5 bg-slate-950/60 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all duration-300"
+                      className="h-full bg-gradient-to-r from-red-800 to-red-500 rounded-full transition-all duration-300"
                       style={{ width: `${(fps / 122) * 100}%` }}
                     />
                   </div>
@@ -481,17 +484,17 @@ export default function App() {
             </div>
 
             {/* Tactical Commentary HUD Observation Log */}
-            <div className="rounded-2xl border border-slate-800/90 bg-[#121625]/90 p-5 shadow-[0_8px_25px_rgba(0,0,0,0.15)] relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-3 h-[3px] bg-orange-500" />
-              <div className="absolute top-0 left-0 w-[3px] h-3 bg-orange-500" />
+            <div className="rounded-2xl border border-red-950/80 bg-[#12090a]/90 p-5 shadow-[0_8px_25px_rgba(0,0,0,0.15)] relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-3 h-[3px] bg-red-600" />
+              <div className="absolute top-0 left-0 w-[3px] h-3 bg-red-600" />
 
-              <h4 className="font-display font-black text-xs uppercase tracking-widest text-slate-200 mb-3 pb-2 border-b border-slate-800/80 flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-orange-500" />
-                <span>TACTICAL CONSOLE NOTES</span>
+              <h4 className="font-display font-black text-xs uppercase tracking-widest text-slate-200 mb-3 pb-2 border-b border-red-950/80 flex items-center gap-2">
+                <Terminal className="w-4 h-4 text-red-500" />
+                <span className="old-age-title text-xs">TACTICAL CONSOLE NOTES</span>
               </h4>
 
-              <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 font-mono text-xs">
-                <span className="bg-orange-500/10 text-orange-400 border border-orange-500/30 text-[9px] px-2 py-0.5 rounded tracking-widest uppercase font-bold block w-fit mb-3">
+              <div className="bg-[#0c0505]/95 border border-red-950/80 rounded-xl p-4 font-mono text-xs">
+                <span className="bg-red-500/10 text-red-400 border border-red-500/30 text-[9px] px-2 py-0.5 rounded tracking-widest uppercase font-bold block w-fit mb-3">
                   AUDIO LOG ANALYZER
                 </span>
                 <p className="text-slate-300 leading-relaxed font-sans mt-1 text-xs select-none">
@@ -501,22 +504,22 @@ export default function App() {
             </div>
 
             {/* Holographic Diagnostic Stream Logs */}
-            <div className="rounded-2xl border border-slate-800/90 bg-[#121625]/90 p-5 shadow-[0_8px_25px_rgba(0,0,0,0.15)] relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-3 h-[3px] bg-yellow-500" />
-              <div className="absolute top-0 left-0 w-[3px] h-3 bg-yellow-500" />
+            <div className="rounded-2xl border border-red-950/80 bg-[#12090a]/90 p-5 shadow-[0_8px_25px_rgba(0,0,0,0.15)] relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-3 h-[3px] bg-red-650" />
+              <div className="absolute top-0 left-0 w-[3px] h-3 bg-red-650" />
 
-              <h4 className="font-display font-black text-xs uppercase tracking-widest text-slate-200 mb-3 pb-2 border-b border-slate-800/80 flex items-center justify-between">
-                <span>TERMINAL SYSTEMS FEED</span>
-                <Activity className="w-4 h-4 text-yellow-500 animate-pulse" />
+              <h4 className="font-display font-black text-xs uppercase tracking-widest text-slate-200 mb-3 pb-2 border-b border-red-950/80 flex items-center justify-between">
+                <span className="old-age-title text-xs">TERMINAL SYSTEMS FEED</span>
+                <Activity className="w-4 h-4 text-red-500 animate-pulse" />
               </h4>
 
-              <div className="bg-slate-900 border border-slate-950 p-4 rounded-xl font-mono text-[10px] space-y-2 h-[150px] overflow-y-auto shadow-inner">
+              <div className="bg-[#0c0505] border border-red-950/80 p-4 rounded-xl font-mono text-[10px] space-y-2 h-[150px] overflow-y-auto shadow-inner">
                 {activeTerminalLogs.length === 0 ? (
                   <div className="text-slate-500 italic">No system signal logs recorded yet...</div>
                 ) : (
                   activeTerminalLogs.map((log, lIdx) => (
-                    <div key={lIdx} className="text-slate-300 border-l-2 border-cyan-500/30 pl-2 leading-normal">
-                      <span className="text-slate-500 mr-1">[{new Date().toLocaleTimeString().substring(0, 8)}]</span>
+                    <div key={lIdx} className="text-slate-300 border-l-2 border-red-500/40 pl-2 leading-normal">
+                      <span className="text-red-700/60 mr-1">[{new Date().toLocaleTimeString().substring(0, 8)}]</span>
                       {log}
                     </div>
                   ))

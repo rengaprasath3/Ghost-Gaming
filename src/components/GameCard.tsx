@@ -8,6 +8,7 @@ import { GameData } from '../types';
 import { AnimationCanvas, AnimationCanvasHandle } from './AnimationCanvas';
 import { ArrowDownRight, Award, Flame, Swords, Shield, Target, Zap, CircleDot, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { playSound } from '../audio';
 
 interface GameCardProps {
   key?: any;
@@ -59,6 +60,10 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
 
   const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
     setClickCount(prev => prev + 1);
+    
+    // Play the stylized synthesized real-time sound of the chosen game
+    playSound(game.id as any);
+
     if (!isActive) {
       onSelect();
       setTimeout(() => {
@@ -80,44 +85,44 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
 
   const colorConfig = {
     'coc': {
-      borderActive: 'border-orange-500 bg-gradient-to-br from-orange-950/30 via-[#0e101f] to-[#070913]/90 shadow-[0_0_30px_rgba(249,115,22,0.25)]',
-      borderInactive: 'border-zinc-800/80 bg-[#0c0e1a]/95 hover:bg-[#101326] hover:border-orange-500/20 shadow-sm',
-      badgeBg: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-      textAccent: 'text-orange-400',
-      themeGlow: 'bg-orange-500',
-      bgGradient: 'from-orange-500/10 via-orange-950/5 to-transparent',
-      accentGlowColor: 'rgba(249, 115, 22, 0.6)',
-      iconBg: 'bg-orange-950/40 text-orange-400 border-orange-500/35'
+      borderActive: 'border-red-600 bg-gradient-to-br from-[#1b080a] via-[#080505] to-[#150f10] shadow-[0_0_30px_rgba(239,68,68,0.25)]',
+      borderInactive: 'border-zinc-800 bg-[#0c0506]/95 hover:bg-[#140809] hover:border-red-500/20 shadow-sm',
+      badgeBg: 'bg-red-500/20 text-red-300 border-red-500/30',
+      textAccent: 'text-red-400',
+      themeGlow: 'bg-red-500',
+      bgGradient: 'from-red-500/10 via-red-950/5 to-transparent',
+      accentGlowColor: 'rgba(239, 68, 68, 0.6)',
+      iconBg: 'bg-red-950/40 text-red-400 border-red-500/35'
     },
     'bgmi': {
-      borderActive: 'border-cyan-400 bg-gradient-to-br from-cyan-950/30 via-[#0e101f] to-[#070913]/90 shadow-[0_0_30px_rgba(6,182,212,0.25)]',
-      borderInactive: 'border-zinc-800/80 bg-[#0c0e1a]/95 hover:bg-[#101326] hover:border-cyan-400/20 shadow-sm',
-      badgeBg: 'bg-cyan-500/20 text-cyan-400 border-cyan-400/30',
-      textAccent: 'text-cyan-400',
-      themeGlow: 'bg-cyan-400',
-      bgGradient: 'from-cyan-500/10 via-cyan-950/5 to-transparent',
-      accentGlowColor: 'rgba(6, 182, 212, 0.6)',
-      iconBg: 'bg-cyan-950/40 text-cyan-400 border-cyan-400/35'
+      borderActive: 'border-red-700 bg-gradient-to-br from-[#22070e] via-[#080505] to-[#150f10] shadow-[0_0_30px_rgba(190,18,60,0.25)]',
+      borderInactive: 'border-zinc-805 border-zinc-800 bg-[#0c0506]/95 hover:bg-[#140809] hover:border-red-700/20 shadow-sm',
+      badgeBg: 'bg-red-700/20 text-red-300 border-red-700/30',
+      textAccent: 'text-red-400',
+      themeGlow: 'bg-red-600',
+      bgGradient: 'from-red-600/10 via-red-950/5 to-transparent',
+      accentGlowColor: 'rgba(190, 18, 60, 0.6)',
+      iconBg: 'bg-[#220a0e] text-red-400 border-red-600/35'
     },
     'pogo': {
-      borderActive: 'border-yellow-400 bg-gradient-to-br from-yellow-950/30 via-[#0e101f] to-[#070913]/90 shadow-[0_0_30px_rgba(234,179,8,0.25)]',
-      borderInactive: 'border-zinc-800/80 bg-[#0c0e1a]/95 hover:bg-[#101326] hover:border-yellow-400/20 shadow-sm',
-      badgeBg: 'bg-yellow-500/20 text-yellow-400 border-yellow-400/30',
-      textAccent: 'text-yellow-400',
-      themeGlow: 'bg-yellow-400',
-      bgGradient: 'from-yellow-500/10 via-yellow-950/5 to-transparent',
-      accentGlowColor: 'rgba(234, 179, 8, 0.6)',
-      iconBg: 'bg-yellow-950/40 text-yellow-400 border-yellow-400/35'
+      borderActive: 'border-amber-600 bg-gradient-to-br from-[#240c06] via-[#080505] to-[#150f10] shadow-[0_0_30px_rgba(217,119,6,0.25)]',
+      borderInactive: 'border-zinc-800 bg-[#0c0506]/95 hover:bg-[#140809] hover:border-amber-500/20 shadow-sm',
+      badgeBg: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+      textAccent: 'text-amber-400',
+      themeGlow: 'bg-amber-500',
+      bgGradient: 'from-amber-500/10 via-amber-950/5 to-transparent',
+      accentGlowColor: 'rgba(217, 119, 6, 0.6)',
+      iconBg: 'bg-[#240e08] text-amber-400 border-amber-600/35'
     },
     'chess': {
-      borderActive: 'border-emerald-400 bg-gradient-to-br from-emerald-950/30 via-[#0e101f] to-[#070913]/90 shadow-[0_0_30px_rgba(16,185,129,0.25)]',
-      borderInactive: 'border-zinc-800/80 bg-[#0c0e1a]/95 hover:bg-[#101326] hover:border-emerald-400/20 shadow-sm',
-      badgeBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-400/30',
-      textAccent: 'text-emerald-400',
-      themeGlow: 'bg-emerald-400',
-      bgGradient: 'from-emerald-500/10 via-emerald-950/5 to-transparent',
-      accentGlowColor: 'rgba(16, 185, 129, 0.6)',
-      iconBg: 'bg-emerald-950/40 text-emerald-400 border-emerald-400/35'
+      borderActive: 'border-red-800 bg-gradient-to-br from-[#250406] via-[#080505] to-[#150f10] shadow-[0_0_30px_rgba(153,27,27,0.25)]',
+      borderInactive: 'border-zinc-800 bg-[#0c0506]/95 hover:bg-[#140809] hover:border-red-850/30 shadow-sm',
+      badgeBg: 'bg-red-800/20 text-red-400 border-red-800/30',
+      textAccent: 'text-red-400',
+      themeGlow: 'bg-red-700',
+      bgGradient: 'from-red-700/10 via-red-950/5 to-transparent',
+      accentGlowColor: 'rgba(153, 27, 27, 0.6)',
+      iconBg: 'bg-[#280a0e] text-red-400 border-red-800/35'
     }
   }[game.id];
 
@@ -204,11 +209,20 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
               id={`game-icon-${game.id}`} 
               className={`w-14 h-14 rounded-xl border flex items-center justify-center transition duration-500 group-hover:rotate-6 overflow-hidden shrink-0 shadow-md ${colorConfig.iconBg}`}
             >
-              <span className="text-3xl select-none">{game.icon}</span>
+              {game.icon.startsWith('http') ? (
+                <img 
+                  src={game.icon} 
+                  alt={`${game.title} Play Store Icon`} 
+                  className="w-full h-full object-cover rounded-lg"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <span className="text-3xl select-none">{game.icon}</span>
+              )}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 id={`game-title-${game.id}`} className="text-xl md:text-2xl font-display font-black tracking-wide text-white transition group-hover:text-cyan-400 duration-300">
+                <h3 id={`game-title-${game.id}`} className="text-xl md:text-2xl old-age-title transition group-hover:text-red-400 duration-300">
                   {game.title}
                 </h3>
                 {isActive && (

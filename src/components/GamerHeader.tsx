@@ -110,26 +110,26 @@ export default function GamerHeader({ onRobotAttack, robotStatus, gameColorTheme
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-zinc-800/80 pb-4">
             <div className="text-center lg:text-left">
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3">
-                <h1 id="gamer-username" className="text-4xl md:text-5xl font-display font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-slate-50 via-slate-200 to-cyan-400 animate-pulse uppercase">
+                <h1 id="gamer-username" className="text-4xl md:text-5xl old-age-title animate-pulse uppercase">
                   {GAMER_PROFILE.primaryUsername}
                 </h1>
-                <span className="bg-gradient-to-r from-cyan-950/80 to-slate-950/85 text-cyan-400 border border-cyan-805 border-cyan-800 font-mono text-[10px] font-bold px-3 py-1 rounded uppercase tracking-widest shadow-md">
+                <span className="bg-gradient-to-r from-red-950/80 to-slate-950/85 text-red-500 border border-red-900/60 font-mono text-[10px] font-bold px-3 py-1 rounded uppercase tracking-widest shadow-md">
                   GLOBAL RANK {GAMER_PROFILE.globalRank}
                 </span>
               </div>
               <p id="gamer-title" className="text-xs font-mono mt-1.5 text-slate-400 uppercase tracking-[0.25em] flex items-center justify-center lg:justify-start gap-2">
-                <Terminal className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
+                <Terminal className="w-3.5 h-3.5 text-red-500 shrink-0" />
                 <span>{GAMER_PROFILE.title}</span>
               </p>
             </div>
  
             {/* Simulated Live Diagnostic HUD clock */}
-            <div className="bg-[#05060e]/90 border border-zinc-800 rounded-lg p-3 font-mono text-right max-lg:text-center shrink-0 min-w-[200px]">
+            <div className="bg-[#0c0505]/95 border border-red-950/80 rounded-lg p-3 font-mono text-right max-lg:text-center shrink-0 min-w-[200px]">
               <div className="text-[9px] text-slate-450 text-slate-400 uppercase tracking-widest flex items-center gap-1 justify-end max-lg:justify-center">
-                <Radio className="w-3 h-3 text-orange-500 animate-pulse" />
-                COGNITIVE NETWORK UPTIME: <strong className="text-emerald-400 ml-auto">{GAMER_PROFILE.uptime}</strong>
+                <Radio className="w-3 h-3 text-red-500 animate-pulse" />
+                COGNITIVE NETWORK UPTIME: <strong className="text-red-400 ml-auto">{GAMER_PROFILE.uptime}</strong>
               </div>
-              <div id="hud-terminal-clock" className="text-xs text-cyan-400 font-bold tracking-wider mt-1 select-none">
+              <div id="hud-terminal-clock" className="text-xs text-red-405 text-red-400 font-bold tracking-wider mt-1 select-none">
                 {timestamp ? timestamp : '2026-06-02 20:47:03 UTC'}
               </div>
             </div>
@@ -138,7 +138,7 @@ export default function GamerHeader({ onRobotAttack, robotStatus, gameColorTheme
           {/* Account matrix linking section */}
           <div className="mt-5">
             <h4 className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-1.5 justify-center lg:justify-start">
-              <UserCheck className="w-3.5 h-3.5 text-cyan-500" />
+              <UserCheck className="w-3.5 h-3.5 text-red-500" />
               INTEGRATED FEDERATED SYSTEM IDENTITIES
             </h4>
  
@@ -146,10 +146,10 @@ export default function GamerHeader({ onRobotAttack, robotStatus, gameColorTheme
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {GAMES_DATA.map((game, key) => {
                 const accConfig = {
-                  'coc': { user: 'Renga', label: 'Clash of Clans', status: 'tamilanda', color: 'border-orange-500/30 text-orange-400 bg-orange-950/25 hover:bg-orange-950/45' },
-                  'bgmi': { user: 'Clown Ghost', label: 'BGMI Mobile', status: '3.1 F/D', color: 'border-cyan-500/30 text-cyan-400 bg-cyan-950/25 hover:bg-cyan-950/45' },
-                  'pogo': { user: 'Rengaprasath', label: 'Pokémon GO', status: 'Mystic ❄️', color: 'border-yellow-500/30 text-yellow-400 bg-yellow-950/25 hover:bg-yellow-950/45' },
-                  'chess': { user: 'Renga', label: 'Chess.com', status: '200 Rating', color: 'border-emerald-500/30 text-emerald-400 bg-emerald-950/25 hover:bg-emerald-950/45' }
+                  'coc': { user: 'Renga', label: 'Clash of Clans', status: 'tamilanda', color: 'border-red-500/30 text-red-400 bg-red-950/20 hover:bg-red-950/40' },
+                  'bgmi': { user: 'Clown Ghost', label: 'BGMI Mobile', status: '3.1 F/D', color: 'border-red-700/30 text-red-400 bg-red-950/20 hover:bg-red-950/40' },
+                  'pogo': { user: 'Rengaprasath', label: 'Pokémon GO', status: 'Mystic ❄️', color: 'border-amber-600/30 text-amber-500 bg-amber-950/20 hover:bg-amber-950/40' },
+                  'chess': { user: 'Renga', label: 'Chess.com', status: '200 Rating', color: 'border-red-900/30 text-red-500 bg-red-950/20 hover:bg-red-950/40' }
                 }[game.id];
  
                 return (
@@ -159,8 +159,17 @@ export default function GamerHeader({ onRobotAttack, robotStatus, gameColorTheme
                   >
                     <div className="flex items-center justify-between text-[9px] uppercase tracking-wider font-mono opacity-80 gap-2">
                       <span className="truncate">{accConfig.label}</span>
-                      <div className="w-6 h-6 flex items-center justify-center shrink-0 select-none">
-                        <span className="text-sm">{game.icon}</span>
+                      <div className="w-6 h-6 flex items-center justify-center shrink-0 select-none overflow-hidden rounded-md">
+                        {game.icon.startsWith('http') ? (
+                          <img 
+                            src={game.icon} 
+                            alt={`${game.title} playstore icon`} 
+                            className="w-full h-full object-cover rounded"
+                            referrerPolicy="no-referrer"
+                          />
+                        ) : (
+                          <span className="text-sm">{game.icon}</span>
+                        )}
                       </div>
                     </div>
                     <div className="font-display font-black text-xs md:text-sm tracking-wide text-white mt-1.5">
