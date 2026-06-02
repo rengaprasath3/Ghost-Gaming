@@ -7,6 +7,7 @@ import { GAMER_PROFILE, GAMES_DATA } from '../data';
 import { Shield, Compass, Swords, Terminal, Radio, Cpu, Activity, UserCheck, Flame } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import GamerRobot from './GamerRobot';
+import GameIcon from './GameIcon';
 
 interface GamerHeaderProps {
   onRobotAttack: () => void;
@@ -17,6 +18,9 @@ interface GamerHeaderProps {
 export default function GamerHeader({ onRobotAttack, robotStatus, gameColorTheme = '#00f0ff' }: GamerHeaderProps) {
   const [pulse, setPulse] = useState(true);
   const [timestamp, setTimestamp] = useState<string>('');
+  const [headerFps, setHeaderFps] = useState<number>(120);
+  const [headerPing, setHeaderPing] = useState<number>(8);
+  const [headerCpu, setHeaderCpu] = useState<number>(18);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -26,21 +30,36 @@ export default function GamerHeader({ onRobotAttack, robotStatus, gameColorTheme
     // Dynamic clock ticking in terminal format
     const updateTime = () => {
       const now = new Date();
-      setTimestamp(now.toISOString().replace('T', ' ').substring(0, 19) + ' UTC');
+      // IST is UTC + 5:30
+      const istTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+      const year = istTime.getUTCFullYear();
+      const month = String(istTime.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(istTime.getUTCDate()).padStart(2, '0');
+      const hours = String(istTime.getUTCHours()).padStart(2, '0');
+      const minutes = String(istTime.getUTCMinutes()).padStart(2, '0');
+      const seconds = String(istTime.getUTCSeconds()).padStart(2, '0');
+      setTimestamp(`${year}-${month}-${day} ${hours}:${minutes}:${seconds} IST`);
     };
     updateTime();
     const clockInterval = setInterval(updateTime, 1000);
 
+    const statsInterval = setInterval(() => {
+      setHeaderFps(Math.floor(118 + Math.random() * 5));
+      setHeaderPing(Math.floor(6 + Math.random() * 6));
+      setHeaderCpu(Math.floor(12 + Math.random() * 11));
+    }, 500);
+
     return () => {
       clearInterval(interval);
       clearInterval(clockInterval);
+      clearInterval(statsInterval);
     };
   }, []);
 
   return (
     <div 
       id="gamer-header-container" 
-      className="relative overflow-hidden rounded-2xl border-2 border-zinc-805 border-zinc-800 bg-[#0c0e1a]/95 p-6 md:p-8 backdrop-blur-xl mb-8 shadow-[0_12px_45px_rgba(0,0,0,0.35)]"
+      className="relative overflow-hidden rounded-2xl border border-white/20 bg-[#0c0e1a]/95 p-6 md:p-8 backdrop-blur-xl mb-8 shadow-[0_12px_45px_rgba(0,0,0,0.35)]"
     >
       {/* Glitch Overlay Laser Lines */}
       <div className="absolute inset-0 scanlines opacity-5 pointer-events-none z-0" />
@@ -98,10 +117,33 @@ export default function GamerHeader({ onRobotAttack, robotStatus, gameColorTheme
             </div>
           </div>
  
-          {/* Core system state indicator */}
-          <div className="mt-5 flex items-center gap-2 bg-cyan-950/30 border border-cyan-500/40 px-3 py-1.5 rounded-full font-mono text-[10px] text-cyan-400 tracking-wider">
-            <span className={`w-2 h-2 rounded-full ${pulse ? 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]' : 'bg-cyan-950'} transition-all duration-300`} />
-            <span>LINK-STATE: <strong className="text-cyan-300">{GAMER_PROFILE.coreStatus}</strong></span>
+          {/* Real-time System Metrics Panel below Avatar */}
+          <div className="mt-6 w-full bg-slate-950/70 border border-white/10 rounded-xl p-3 font-mono text-[10px] text-slate-300 space-y-2 select-none min-w-[200px] shadow-lg">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-[#070913]/90 border border-white/10 p-1.5 rounded flex flex-col items-center">
+                <span className="text-[8px] text-slate-400 uppercase tracking-wider">FPS</span>
+                <strong className="text-emerald-400 font-extrabold mt-0.5">{headerFps} FPS</strong>
+              </div>
+              <div className="bg-[#070913]/90 border border-white/10 p-1.5 rounded flex flex-col items-center">
+                <span className="text-[8px] text-slate-400 uppercase tracking-wider">NETWORK</span>
+                <strong className="text-cyan-400 font-extrabold mt-0.5">{headerPing} ms</strong>
+              </div>
+              <div className="bg-[#070913]/90 border border-white/10 p-1.5 rounded flex flex-col items-center">
+                <span className="text-[8px] text-slate-400 uppercase tracking-wider">CPU LOAD</span>
+                <strong className="text-red-400 font-extrabold mt-0.5">{headerCpu}%</strong>
+              </div>
+              <div className="bg-[#070913]/90 border border-white/10 p-1.5 rounded flex flex-col items-center">
+                <span className="text-[8px] text-slate-400 uppercase tracking-wider">LINK</span>
+                <strong className="text-cyan-400 font-extrabold mt-0.5 truncate max-w-full text-[8px]">{GAMER_PROFILE.coreStatus}</strong>
+              </div>
+            </div>
+            {/* Clock time beneath */}
+            <div className="bg-[#070913]/90 border border-white/10 rounded p-1.5 text-center flex flex-col items-center">
+              <span className="text-[8px] text-slate-400 uppercase tracking-wider">IST TIME</span>
+              <strong className="text-yellow-400 font-mono text-[9px] font-bold mt-0.5 tracking-wider select-text">
+                {timestamp ? timestamp : '2026-06-03 03:30:43 IST'}
+              </strong>
+            </div>
           </div>
         </div>
  
@@ -116,21 +158,6 @@ export default function GamerHeader({ onRobotAttack, robotStatus, gameColorTheme
                 <span className="bg-gradient-to-r from-red-950/80 to-slate-950/85 text-red-500 border border-red-900/60 font-mono text-[10px] font-bold px-3 py-1 rounded uppercase tracking-widest shadow-md">
                   GLOBAL RANK {GAMER_PROFILE.globalRank}
                 </span>
-              </div>
-              <p id="gamer-title" className="text-xs font-mono mt-1.5 text-slate-400 uppercase tracking-[0.25em] flex items-center justify-center lg:justify-start gap-2">
-                <Terminal className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                <span>{GAMER_PROFILE.title}</span>
-              </p>
-            </div>
- 
-            {/* Simulated Live Diagnostic HUD clock */}
-            <div className="bg-[#0c0505]/95 border border-red-950/80 rounded-lg p-3 font-mono text-right max-lg:text-center shrink-0 min-w-[200px]">
-              <div className="text-[9px] text-slate-450 text-slate-400 uppercase tracking-widest flex items-center gap-1 justify-end max-lg:justify-center">
-                <Radio className="w-3 h-3 text-red-500 animate-pulse" />
-                COGNITIVE NETWORK UPTIME: <strong className="text-red-400 ml-auto">{GAMER_PROFILE.uptime}</strong>
-              </div>
-              <div id="hud-terminal-clock" className="text-xs text-red-405 text-red-400 font-bold tracking-wider mt-1 select-none">
-                {timestamp ? timestamp : '2026-06-02 20:47:03 UTC'}
               </div>
             </div>
           </div>
@@ -159,17 +186,8 @@ export default function GamerHeader({ onRobotAttack, robotStatus, gameColorTheme
                   >
                     <div className="flex items-center justify-between text-[9px] uppercase tracking-wider font-mono opacity-80 gap-2">
                       <span className="truncate">{accConfig.label}</span>
-                      <div className="w-6 h-6 flex items-center justify-center shrink-0 select-none overflow-hidden rounded-md">
-                        {game.icon.startsWith('http') ? (
-                          <img 
-                            src={game.icon} 
-                            alt={`${game.title} playstore icon`} 
-                            className="w-full h-full object-cover rounded"
-                            referrerPolicy="no-referrer"
-                          />
-                        ) : (
-                          <span className="text-sm">{game.icon}</span>
-                        )}
+                      <div className="w-6 h-6 flex items-center justify-center shrink-0 select-none overflow-hidden rounded-md bg-white/5 border border-white/10">
+                        <GameIcon gameId={game.id} className="w-[85%] h-[85%]" />
                       </div>
                     </div>
                     <div className="font-display font-black text-xs md:text-sm tracking-wide text-white mt-1.5">

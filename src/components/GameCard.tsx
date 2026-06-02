@@ -9,6 +9,7 @@ import { AnimationCanvas, AnimationCanvasHandle } from './AnimationCanvas';
 import { ArrowDownRight, Award, Flame, Swords, Shield, Target, Zap, CircleDot, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { playSound } from '../audio';
+import GameIcon from './GameIcon';
 
 interface GameCardProps {
   key?: any;
@@ -193,16 +194,7 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
               id={`game-icon-${game.id}`} 
               className={`w-14 h-14 rounded-xl border flex items-center justify-center transition duration-500 group-hover:rotate-6 overflow-hidden shrink-0 shadow-md ${colorConfig.iconBg}`}
             >
-              {game.icon.startsWith('http') ? (
-                <img 
-                  src={game.icon} 
-                  alt={`${game.title} Play Store Icon`} 
-                  className="w-full h-full object-cover rounded-lg"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <span className="text-3xl select-none">{game.icon}</span>
-              )}
+              <GameIcon gameId={game.id} className="w-[85%] h-[85%]" />
             </div>
             <div>
               <div className="flex items-center gap-2">

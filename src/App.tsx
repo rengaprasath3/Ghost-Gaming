@@ -434,12 +434,10 @@ export default function App() {
           <div id="control-terminal-pillar" className="lg:col-span-4 flex flex-col gap-6 lg:sticky lg:top-8">
             
             {/* Live Performance System Diagnostics Tracker */}
-            <div className="rounded-2xl border border-red-950/80 bg-[#12090a]/90 p-5 shadow-[0_8px_25px_rgba(0,0,0,0.15)] relative overflow-hidden">
+            <div className="rounded-2xl border border-white/20 bg-[#12090a]/90 p-5 shadow-[0_8px_25px_rgba(0,0,0,0.15)] relative overflow-hidden hover:border-white/40 transition-colors duration-300">
               <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full blur-[40px] pointer-events-none" />
-              <div className="absolute top-0 left-0 w-3 h-[3px] bg-red-650" />
-              <div className="absolute top-0 left-0 w-[3px] h-3 bg-red-650" />
               
-              <h4 className="font-display font-black text-xs uppercase tracking-widest text-slate-200 mb-4 pb-2 border-b border-red-950/80 flex items-center justify-between">
+              <h4 className="font-display font-black text-xs uppercase tracking-widest text-slate-200 mb-4 pb-2 border-b border-white/10 flex items-center justify-between">
                 <span className="old-age-title text-xs">SYSTEM PERFORMANCE</span>
                 <Sliders className="w-4 h-4 text-red-500 animate-pulse" />
               </h4>
@@ -471,11 +469,11 @@ export default function App() {
 
                 {/* India Regional Nodes ping */}
                 <div className="grid grid-cols-2 gap-2 pt-2 text-center text-xs font-mono">
-                  <div className="bg-[#0b0e1a]/80 border border-slate-800/80 p-2 rounded-lg">
+                  <div className="bg-[#0b0e1a]/80 border border-white/10 p-2 rounded-lg">
                     <span className="text-[9px] text-slate-400 uppercase tracking-widest block">SECTOR PING</span>
                     <span className="text-slate-100 font-bold block mt-0.5">8ms</span>
                   </div>
-                  <div className="bg-[#0b0e1a]/80 border border-slate-800/80 p-2 rounded-lg">
+                  <div className="bg-[#0b0e1a]/80 border border-white/10 p-2 rounded-lg">
                     <span className="text-[9px] text-slate-400 uppercase tracking-widest block">PACKET LOSS</span>
                     <span className="text-emerald-400 font-bold block mt-0.5">0.00%</span>
                   </div>
@@ -483,37 +481,14 @@ export default function App() {
               </div>
             </div>
 
-            {/* Tactical Commentary HUD Observation Log */}
-            <div className="rounded-2xl border border-red-950/80 bg-[#12090a]/90 p-5 shadow-[0_8px_25px_rgba(0,0,0,0.15)] relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-3 h-[3px] bg-red-600" />
-              <div className="absolute top-0 left-0 w-[3px] h-3 bg-red-600" />
-
-              <h4 className="font-display font-black text-xs uppercase tracking-widest text-slate-200 mb-3 pb-2 border-b border-red-950/80 flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-red-500" />
-                <span className="old-age-title text-xs">TACTICAL CONSOLE NOTES</span>
-              </h4>
-
-              <div className="bg-[#0c0505]/95 border border-red-950/80 rounded-xl p-4 font-mono text-xs">
-                <span className="bg-red-500/10 text-red-400 border border-red-500/30 text-[9px] px-2 py-0.5 rounded tracking-widest uppercase font-bold block w-fit mb-3">
-                  AUDIO LOG ANALYZER
-                </span>
-                <p className="text-slate-300 leading-relaxed font-sans mt-1 text-xs select-none">
-                  &quot;{activeCommentary}&quot;
-                </p>
-              </div>
-            </div>
-
             {/* Holographic Diagnostic Stream Logs */}
-            <div className="rounded-2xl border border-red-950/80 bg-[#12090a]/90 p-5 shadow-[0_8px_25px_rgba(0,0,0,0.15)] relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-3 h-[3px] bg-red-650" />
-              <div className="absolute top-0 left-0 w-[3px] h-3 bg-red-650" />
-
-              <h4 className="font-display font-black text-xs uppercase tracking-widest text-slate-200 mb-3 pb-2 border-b border-red-950/80 flex items-center justify-between">
+            <div className="rounded-2xl border border-white/20 bg-[#12090a]/90 p-5 shadow-[0_8px_25px_rgba(0,0,0,0.15)] relative overflow-hidden hover:border-white/40 transition-colors duration-300">
+              <h4 className="font-display font-black text-xs uppercase tracking-widest text-slate-200 mb-3 pb-2 border-b border-white/10 flex items-center justify-between">
                 <span className="old-age-title text-xs">TERMINAL SYSTEMS FEED</span>
                 <Activity className="w-4 h-4 text-red-500 animate-pulse" />
               </h4>
 
-              <div className="bg-[#0c0505] border border-red-950/80 p-4 rounded-xl font-mono text-[10px] space-y-2 h-[150px] overflow-y-auto shadow-inner">
+              <div className="bg-[#0c0505] border border-white/10 p-4 rounded-xl font-mono text-[10px] space-y-2 h-[150px] overflow-y-auto shadow-inner">
                 {activeTerminalLogs.length === 0 ? (
                   <div className="text-slate-500 italic">No system signal logs recorded yet...</div>
                 ) : (
