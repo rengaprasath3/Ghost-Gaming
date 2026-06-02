@@ -10,12 +10,12 @@ import GamerRobot from './GamerRobot';
 import GameIcon from './GameIcon';
 
 interface GamerHeaderProps {
-  onRobotAttack: () => void;
-  robotStatus: 'idle' | 'charging' | 'flying' | 'targeting' | 'firing' | 'returning';
+  onRobotAttack?: () => void;
+  robotStatus?: 'idle' | 'charging' | 'flying' | 'targeting' | 'firing' | 'returning';
   gameColorTheme?: string;
 }
 
-export default function GamerHeader({ onRobotAttack, robotStatus, gameColorTheme = '#00f0ff' }: GamerHeaderProps) {
+export default function GamerHeader({ onRobotAttack, robotStatus = 'idle', gameColorTheme = '#00f0ff' }: GamerHeaderProps) {
   const [pulse, setPulse] = useState(true);
   const [timestamp, setTimestamp] = useState<string>('');
   const [headerFps, setHeaderFps] = useState<number>(120);
@@ -86,26 +86,16 @@ export default function GamerHeader({ onRobotAttack, robotStatus, gameColorTheme
         <div className="flex flex-col items-center shrink-0">
           <div className="relative group select-none">
             {/* Spinning hexagonal/isometric aura */}
-            <div className={`absolute -inset-2 rounded-full bg-gradient-to-tr from-cyan-400 via-orange-400 to-emerald-400 opacity-90 blur-md group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 ${robotStatus !== 'idle' ? 'animate-pulse' : ''}`} />
+            <div className="absolute -inset-2 rounded-full bg-gradient-to-tr from-cyan-400 via-orange-400 to-emerald-400 opacity-90 blur-md group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" />
             
             <div className="relative w-28 h-28 md:w-32 md:h-32 rounded-full bg-zinc-950/90 border-4 border-cyan-500/50 flex items-center justify-center shadow-[0_8px_25px_rgba(6,182,212,0.3)]">
-              {robotStatus === 'idle' || robotStatus === 'charging' ? (
-                <div id="gamer-robot-avatar" className="w-[85%] h-[85%]">
-                  <GamerRobot 
-                    status={robotStatus} 
-                    isHeaderAvatar={true} 
-                    gameColorTheme={gameColorTheme}
-                    onClick={onRobotAttack} 
-                  />
-                </div>
-              ) : (
-                /* Virtual hologram indicating that the Clown has left his base */
-                <div className="text-center p-2 flex flex-col items-center justify-center select-none">
-                  <Skull className="w-8 h-8 text-emerald-400 animate-[bounce_0.2s_infinite]" />
-                  <span className="text-[8px] font-mono text-emerald-500 uppercase tracking-widest mt-1.5 font-bold">CLOWN ACTIVE</span>
-                  <span className="text-[7px] font-mono text-emerald-400/60">TOTAL CARNAGE</span>
-                </div>
-              )}
+              <div id="gamer-robot-avatar" className="w-[85%] h-[85%] flex items-center justify-center">
+                <GamerRobot 
+                  status="idle" 
+                  isHeaderAvatar={false} 
+                  gameColorTheme={gameColorTheme}
+                />
+              </div>
               
               {/* Dynamic HUD layout on avatar */}
               <div className="absolute inset-0 border-2 border-dotted border-cyan-400/30 rounded-full animate-[spin_10s_linear_infinite] pointer-events-none" />

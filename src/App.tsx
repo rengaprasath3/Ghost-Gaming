@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { GAMES_DATA, GAMER_PROFILE } from './data';
 import GamerHeader from './components/GamerHeader';
 import GameCard from './components/GameCard';
@@ -36,6 +36,64 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'profile' | 'diagnostics'>('profile');
   const [fps, setFps] = useState<number>(120);
   const [isRebooting, setIsRebooting] = useState<boolean>(false);
+
+  // Auto-focused game node detection based on viewport scroll geometry
+  const isScrollingLockedRef = useRef(false);
+  const activeGameIdRef = useRef<GameID>('coc');
+
+  useEffect(() => {
+    activeGameIdRef.current = activeGameId;
+  }, [activeGameId]);
+
+  useEffect(() => {
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (ticking) return;
+      
+      window.requestAnimationFrame(() => {
+        ticking = false;
+        
+        // Prevent layout transitions (from card clicks) from overriding explicitly selected nodes
+        if (isScrollingLockedRef.current) return;
+
+        const gameIds: GameID[] = ['coc', 'bgmi', 'pogo', 'chess'];
+        const viewportCenterY = window.innerHeight / 2;
+
+        let closestGameId: GameID | null = null;
+        let minDistance = Infinity;
+
+        gameIds.forEach(id => {
+          const el = document.getElementById(`game-card-${id}`);
+          if (el) {
+            const rect = el.getBoundingClientRect();
+            // Calculate center point of the card relative to viewport bounds
+            const cardCenterY = rect.top + rect.height / 2;
+            const distance = Math.abs(cardCenterY - viewportCenterY);
+            if (distance < minDistance) {
+              minDistance = distance;
+              closestGameId = id;
+            }
+          }
+        });
+
+        if (closestGameId && closestGameId !== activeGameIdRef.current) {
+          setActiveGameId(closestGameId);
+          setActiveTerminalLogs(prev => [
+            `SCROLL_AUTO: Auto-opened cockpit focus on [${closestGameId!.toUpperCase()}] database.`,
+            ...prev
+          ]);
+        }
+      });
+      
+      ticking = true;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   // Floating robot flight states
   const [robotStatus, setRobotStatus] = useState<'idle' | 'charging' | 'flying' | 'targeting' | 'firing' | 'returning'>('idle');
@@ -426,12 +484,17 @@ export default function App() {
                   game={game}
                   isActive={activeGameId === game.id}
                   onSelect={() => {
+                    isScrollingLockedRef.current = true;
                     setActiveGameId(game.id);
                     // Append diagnostic log of active node shift
                     setActiveTerminalLogs(prev => [
                       `SIGNAL: Connected to ${game.title} database dynamically.`,
                       ...prev
                     ]);
+                    // Let the accordion expansion animation complete before unlocking auto-scroll focus
+                    setTimeout(() => {
+                      isScrollingLockedRef.current = false;
+                    }, 900);
                   }}
                 />
               ))}
