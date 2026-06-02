@@ -22,7 +22,7 @@ export const GAMES_DATA: GameData[] = [
   {
     id: 'coc',
     title: 'Clash of Clans',
-    icon: 'https://play-lh.googleusercontent.com/LBy0v9g9Kq9ZfJ_P1A8Kx39Yq8A09Uny8VzG66R_n0hU8Fz4pW8_VvY8u5b2vX2K78',
+    icon: 'https://upload.wikimedia.org/wikipedia/en/7/7b/Clash_of_Clans_logo.png',
     logoUrl: 'https://upload.wikimedia.org/wikipedia/en/7/7b/Clash_of_Clans_logo.png',
     bgScene: 'https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?auto=format&fit=crop&w=1200&q=80',
     tagline: 'Strategic Fortress Mastermind',
@@ -48,7 +48,7 @@ export const GAMES_DATA: GameData[] = [
   {
     id: 'bgmi',
     title: 'BGMI',
-    icon: 'https://play-lh.googleusercontent.com/gO0q6f2nB2f_Wcl_UonO5s8v_L84sC5v_u9S88mP8-L_O7rVq9m6aU0F1A1aG_YI7s',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/Battlegrounds_Mobile_India_logo.png',
     logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/Battlegrounds_Mobile_India_logo.png',
     bgScene: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80',
     tagline: 'High-Precision Special Ops Fragger',
@@ -74,7 +74,7 @@ export const GAMES_DATA: GameData[] = [
   {
     id: 'pogo',
     title: 'Pokémon GO',
-    icon: 'https://play-lh.googleusercontent.com/orZ96_6Wp70G9Sca9vY4q6c3U1hF5D3r70gOf9Z9B6kR6Dk1_R',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/512px-Pok%C3%A9_Ball_icon.svg.png',
     logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/512px-Pok%C3%A9_Ball_icon.svg.png',
     bgScene: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=1200&q=80',
     tagline: 'Apex Shadow Mythic Collector',
@@ -100,8 +100,8 @@ export const GAMES_DATA: GameData[] = [
   {
     id: 'chess',
     title: 'Chess.com',
-    icon: 'https://play-lh.googleusercontent.com/v8pLa9XSTv7bChm0M9XG5SK0P5PfVgZ7_p2E5v79V4_X8',
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Chess.com_logo.svg/480px-Chess.com_logo.svg.png',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Chess.com_logo.svg/512px-Chess.com_logo.svg.png',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Chess.com_logo.svg/512px-Chess.com_logo.svg.png',
     bgScene: 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&w=1200&q=80',
     tagline: 'Tactical Blitz Mindbender',
     color: 'chess-green',

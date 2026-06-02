@@ -85,8 +85,8 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
 
   const colorConfig = {
     'coc': {
-      borderActive: 'border-red-600 bg-gradient-to-br from-[#1b080a] via-[#080505] to-[#150f10] shadow-[0_0_30px_rgba(239,68,68,0.25)]',
-      borderInactive: 'border-zinc-800 bg-[#0c0506]/95 hover:bg-[#140809] hover:border-red-500/20 shadow-sm',
+      borderActive: 'border-white bg-gradient-to-br from-[#1b080a] via-[#080505] to-[#150f10] shadow-[0_0_25px_rgba(255,255,255,0.2)]',
+      borderInactive: 'border-white/10 bg-[#0c0506]/95 hover:bg-[#140809] hover:border-white/30 shadow-sm',
       badgeBg: 'bg-red-500/20 text-red-300 border-red-500/30',
       textAccent: 'text-red-400',
       themeGlow: 'bg-red-500',
@@ -95,8 +95,8 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
       iconBg: 'bg-red-950/40 text-red-400 border-red-500/35'
     },
     'bgmi': {
-      borderActive: 'border-red-700 bg-gradient-to-br from-[#22070e] via-[#080505] to-[#150f10] shadow-[0_0_30px_rgba(190,18,60,0.25)]',
-      borderInactive: 'border-zinc-805 border-zinc-800 bg-[#0c0506]/95 hover:bg-[#140809] hover:border-red-700/20 shadow-sm',
+      borderActive: 'border-white bg-gradient-to-br from-[#22070e] via-[#080505] to-[#150f10] shadow-[0_0_25px_rgba(255,255,255,0.2)]',
+      borderInactive: 'border-white/10 bg-[#0c0506]/95 hover:bg-[#140809] hover:border-white/30 shadow-sm',
       badgeBg: 'bg-red-700/20 text-red-300 border-red-700/30',
       textAccent: 'text-red-400',
       themeGlow: 'bg-red-600',
@@ -105,8 +105,8 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
       iconBg: 'bg-[#220a0e] text-red-400 border-red-600/35'
     },
     'pogo': {
-      borderActive: 'border-amber-600 bg-gradient-to-br from-[#240c06] via-[#080505] to-[#150f10] shadow-[0_0_30px_rgba(217,119,6,0.25)]',
-      borderInactive: 'border-zinc-800 bg-[#0c0506]/95 hover:bg-[#140809] hover:border-amber-500/20 shadow-sm',
+      borderActive: 'border-white bg-gradient-to-br from-[#240c06] via-[#080505] to-[#150f10] shadow-[0_0_25px_rgba(255,255,255,0.2)]',
+      borderInactive: 'border-white/10 bg-[#0c0506]/95 hover:bg-[#140809] hover:border-white/30 shadow-sm',
       badgeBg: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
       textAccent: 'text-amber-400',
       themeGlow: 'bg-amber-500',
@@ -115,8 +115,8 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
       iconBg: 'bg-[#240e08] text-amber-400 border-amber-600/35'
     },
     'chess': {
-      borderActive: 'border-red-800 bg-gradient-to-br from-[#250406] via-[#080505] to-[#150f10] shadow-[0_0_30px_rgba(153,27,27,0.25)]',
-      borderInactive: 'border-zinc-800 bg-[#0c0506]/95 hover:bg-[#140809] hover:border-red-850/30 shadow-sm',
+      borderActive: 'border-white bg-gradient-to-br from-[#250406] via-[#080505] to-[#150f10] shadow-[0_0_25px_rgba(255,255,255,0.2)]',
+      borderInactive: 'border-white/10 bg-[#0c0506]/95 hover:bg-[#140809] hover:border-white/30 shadow-sm',
       badgeBg: 'bg-red-800/20 text-red-400 border-red-800/30',
       textAccent: 'text-red-400',
       themeGlow: 'bg-red-700',
@@ -182,23 +182,7 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
         />
       )}
 
-      {/* Futuristic Hinges */}
-      <div className={`absolute top-0 left-0 w-3 h-[3px] transition-colors duration-500 ${isActive ? colorConfig.themeGlow : 'bg-slate-200'}`} />
-      <div className={`absolute top-0 left-0 w-[3px] h-3 transition-colors duration-500 ${isActive ? colorConfig.themeGlow : 'bg-slate-200'}`} />
-      
-      <div className={`absolute top-0 right-0 w-3 h-[3px] transition-colors duration-500 ${isActive ? colorConfig.themeGlow : 'bg-slate-200'}`} />
-      <div className={`absolute top-0 right-0 w-[3px] h-3 transition-colors duration-500 ${isActive ? colorConfig.themeGlow : 'bg-slate-200'}`} />
 
-      <div className={`absolute bottom-0 left-0 w-3 h-[3px] transition-colors duration-500 ${isActive ? colorConfig.themeGlow : 'bg-slate-200'}`} />
-      <div className={`absolute bottom-0 left-0 w-[3px] h-3 transition-colors duration-500 ${isActive ? colorConfig.themeGlow : 'bg-slate-200'}`} />
-
-      <div className={`absolute bottom-0 right-0 w-3 h-[3px] transition-colors duration-500 ${isActive ? colorConfig.themeGlow : 'bg-slate-200'}`} />
-      <div className={`absolute bottom-0 right-0 w-[3px] h-3 transition-colors duration-500 ${isActive ? colorConfig.themeGlow : 'bg-slate-200'}`} />
-
-      {/* Secondary Holographic Frame overlay */}
-      {isActive && (
-        <div className={`absolute inset-1.5 border border-dashed rounded-xl pointer-events-none z-0 transition duration-500 ${game.id === 'coc' ? 'border-orange-500/10' : game.id === 'bgmi' ? 'border-cyan-400/10' : game.id === 'pogo' ? 'border-yellow-400/10' : 'border-emerald-400/10'}`} />
-      )}
 
       <div className="p-6 md:p-8 relative z-10">
         
