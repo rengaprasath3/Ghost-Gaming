@@ -316,8 +316,8 @@ export function playSound(type: 'coc' | 'bgmi' | 'pogo' | 'chess' | 'fire' | 'dr
       });
     } 
     else if (type === 'fire' || type === 'dragon_breath') {
-      // --- Shendu Dragon Fire Breathing Cinematic Sound ---
-      // This plays when invoking attack on Shendu
+      // --- Clown Manic Plasma Cinematic Sound ---
+      // This plays when invoking attack on the Clown
       const breatheTime = now;
 
       // PHASE 1: Dramatic heavy dragonic air inhalation (0.0s to 1.2s)

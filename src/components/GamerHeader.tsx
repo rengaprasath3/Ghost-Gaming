@@ -4,7 +4,7 @@
  */
 
 import { GAMER_PROFILE, GAMES_DATA } from '../data';
-import { Shield, Compass, Swords, Terminal, Radio, Cpu, Activity, UserCheck, Flame } from 'lucide-react';
+import { Shield, Compass, Swords, Terminal, Radio, Cpu, Activity, UserCheck, Flame, Skull } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import GamerRobot from './GamerRobot';
 import GameIcon from './GameIcon';
@@ -99,11 +99,11 @@ export default function GamerHeader({ onRobotAttack, robotStatus, gameColorTheme
                   />
                 </div>
               ) : (
-                /* Virtual hologram indicating that Shendu has left his base */
+                /* Virtual hologram indicating that the Clown has left his base */
                 <div className="text-center p-2 flex flex-col items-center justify-center select-none">
-                  <Flame className="w-8 h-8 text-orange-500 animate-[bounce_0.2s_infinite]" />
-                  <span className="text-[8px] font-mono text-orange-600/90 uppercase tracking-widest mt-1.5 font-bold">SHENDU AWOKEN</span>
-                  <span className="text-[7px] font-mono text-orange-500/60">SACRED INCINERATION</span>
+                  <Skull className="w-8 h-8 text-emerald-400 animate-[bounce_0.2s_infinite]" />
+                  <span className="text-[8px] font-mono text-emerald-500 uppercase tracking-widest mt-1.5 font-bold">CLOWN ACTIVE</span>
+                  <span className="text-[7px] font-mono text-emerald-400/60">TOTAL CARNAGE</span>
                 </div>
               )}
               
@@ -155,9 +155,6 @@ export default function GamerHeader({ onRobotAttack, robotStatus, gameColorTheme
                 <h1 id="gamer-username" className="text-4xl md:text-5xl old-age-title animate-pulse uppercase">
                   {GAMER_PROFILE.primaryUsername}
                 </h1>
-                <span className="bg-gradient-to-r from-red-950/80 to-slate-950/85 text-red-500 border border-red-900/60 font-mono text-[10px] font-bold px-3 py-1 rounded uppercase tracking-widest shadow-md">
-                  GLOBAL RANK {GAMER_PROFILE.globalRank}
-                </span>
               </div>
             </div>
           </div>

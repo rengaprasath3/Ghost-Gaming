@@ -8,6 +8,7 @@ import { GAMES_DATA, GAMER_PROFILE } from './data';
 import GamerHeader from './components/GamerHeader';
 import GameCard from './components/GameCard';
 import GamerRobot from './components/GamerRobot';
+import MatrixReboot from './components/MatrixReboot';
 import { GameID } from './types';
 import { playSound } from './audio';
 import { 
@@ -34,6 +35,7 @@ export default function App() {
   const [activeTerminalLogs, setActiveTerminalLogs] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'profile' | 'diagnostics'>('profile');
   const [fps, setFps] = useState<number>(120);
+  const [isRebooting, setIsRebooting] = useState<boolean>(false);
 
   // Floating robot flight states
   const [robotStatus, setRobotStatus] = useState<'idle' | 'charging' | 'flying' | 'targeting' | 'firing' | 'returning'>('idle');
@@ -49,7 +51,7 @@ export default function App() {
     const avatarEl = document.getElementById('gamer-robot-avatar');
     if (!avatarEl) {
       setActiveTerminalLogs(prev => [
-        `ERROR: Shendu summoning failed. Seal coordinates obscured or files corrupted.`,
+        `ERROR: Clown summoning failed. Base coordinates obscured or files corrupted.`,
         ...prev
       ]);
       return;
@@ -63,7 +65,7 @@ export default function App() {
     setRobotStatus('charging');
 
     setActiveTerminalLogs(prev => [
-      `SYS_WAR: [SHENDU RE-AWAKENED] - Dragon demon pre-heating fire core and floating...`,
+      `SYS_WAR: [CLOWN ACTIVATED] - Manic mascot pre-heating plasma engine and grinning...`,
       ...prev
     ]);
 
@@ -72,12 +74,12 @@ export default function App() {
     // Timed recursive path flow over every card
     const runAttackSequence = (index: number) => {
       if (index >= gameIds.length) {
-        // Complete sweep! Shendu returns home
+        // Complete sweep! Clown returns home
         setRobotStatus('returning');
         setActiveAttackGameId(null);
         setLaserBeams([]);
         setActiveTerminalLogs(prev => [
-          `COMPLETED: All sectors incinerated! Shendu firestorm concluded. Returning to base seal.`,
+          `COMPLETED: All sectors cleared! Clown madness concluded. Returning to base database.`,
           ...prev
         ]);
 
@@ -85,7 +87,7 @@ export default function App() {
         setTimeout(() => {
           setRobotStatus('idle');
           setActiveTerminalLogs(prev => [
-            `SYS_LINK: Shendu docked as baseline emblem. Relink stability: OK.`,
+            `SYS_LINK: Clown docked as baseline emblem. Relink stability: OK.`,
             ...prev
           ]);
         }, 1100);
@@ -122,7 +124,7 @@ export default function App() {
       updateDestPosition();
 
       setActiveTerminalLogs(prev => [
-        `COMMAND: Shendu flying down coordinates! Trajectory lock set on Grid Sector: [${targetId.toUpperCase()}]`,
+        `COMMAND: Clown flying down coordinates! Trajectory lock set on Grid Sector: [${targetId.toUpperCase()}]`,
         ...prev
       ]);
 
@@ -131,7 +133,7 @@ export default function App() {
         setRobotStatus('targeting');
         updateDestPosition();
         setActiveTerminalLogs(prev => [
-          `TELEMETRY: Shendu hovering. Fire breath lock-status: LOCKED. Target grid: ${targetId.toUpperCase()}`,
+          `TELEMETRY: Clown hovering. Plasma strike lock-status: LOCKED. Target grid: ${targetId.toUpperCase()}`,
           ...prev
         ]);
 
@@ -142,7 +144,7 @@ export default function App() {
           updateDestPosition();
           playSound('fire');
           setActiveTerminalLogs(prev => [
-            `FIREPOWER: 🔥 Shendu unleashing hellfire breath onto Sector ${targetId.toUpperCase()}! Base databases under severe fire!`,
+            `FIREPOWER: 🤡 Clown unleashing manic plasma energy onto Sector ${targetId.toUpperCase()}! Base databases under severe fire!`,
             ...prev
           ]);
 
@@ -175,7 +177,7 @@ export default function App() {
                 {
                   id: Math.random(),
                   x1: endX,
-                  y1: currentRobotY + 32, // Position coordinate corresponds to mouth opening of Shendu
+                  y1: currentRobotY + 32, // Position coordinate corresponds to mouth opening of Clown
                   x2: targetXVar,
                   y2: targetYVar
                 },
@@ -233,11 +235,17 @@ export default function App() {
   const activeGame = GAMES_DATA.find(g => g.id === activeGameId) || GAMES_DATA[0];
 
   const handleResetAll = () => {
-    setActiveGameId('coc');
+    setIsRebooting(true);
     playSound('reboot');
+  };
+
+  const handleRebootComplete = () => {
+    setIsRebooting(false);
+    setActiveGameId('coc');
     setActiveTerminalLogs([
       "CORE_LINK: Reset sequence verified by terminal user Renga.",
-      "SYS: Restored primary TownHall 18 state matrices..."
+      "SYS: Restored primary TownHall 18 state matrices...",
+      "MATRIX: Dynamic IST timeline resynchronized successfully!"
     ]);
   };
 
@@ -598,7 +606,7 @@ export default function App() {
           </svg>
         )}
 
-        {/* Floating Tactical Shendu Dragon in viewport flight */}
+        {/* Floating Tactical Evil Clown mascot in viewport flight */}
         <AnimatePresence>
           {robotStatus !== 'idle' && (
             <motion.div
@@ -668,14 +676,18 @@ export default function App() {
                   >
                     <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
                   </motion.div>
-                  <span className="text-[6.5px] font-mono mt-1 px-1.5 py-0.5 bg-black/90 border border-red-500/50 rounded text-red-400 select-none whitespace-nowrap tracking-widest font-black">
-                    🔥 SHENDU FIRE // INCINERATING
+                  <span className="text-[6.5px] font-mono mt-1 px-1.5 py-0.5 bg-black/90 border border-emerald-500/50 rounded text-emerald-400 select-none whitespace-nowrap tracking-widest font-black">
+                    🤡 CLOWN CARNAGE // LAUNCHING
                   </span>
                 </div>
               )}
             </motion.div>
           )}
         </AnimatePresence>
+
+        {isRebooting && (
+          <MatrixReboot onComplete={handleRebootComplete} />
+        )}
 
         {/* Minimalist tactical footer */}
         <footer id="app-footer" className="mt-20 mb-8 border-t border-slate-800/60 pt-8 text-center select-none">
