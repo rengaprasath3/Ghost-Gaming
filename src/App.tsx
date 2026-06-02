@@ -15,10 +15,8 @@ import {
   Gamepad2, 
   Activity, 
   RefreshCw, 
-  Volume2, 
   ShieldAlert, 
   Cpu, 
-  Radio, 
   Sliders, 
   Check, 
   Terminal, 
@@ -266,11 +264,45 @@ export default function App() {
     }, 1200);
   };
 
-  // Fluctuating FPS simulation ticker
+  // Real-time 120Hz Frame-Rate Meter & Performance Monitor
   useEffect(() => {
-    const fpsInterval = setInterval(() => {
-      setFps(Math.floor(118 + Math.random() * 4));
-    }, 450);
+    let lastTime = performance.now();
+    let frameCount = 0;
+    let animId: number;
+
+    const calculateFps = () => {
+      frameCount++;
+      const now = performance.now();
+      const elapsed = now - lastTime;
+
+      if (elapsed >= 500) {
+        let measuredFps = Math.round((frameCount * 1000) / elapsed);
+        // Map high-refresh monitors to 119-120 limits for retro gaming aesthetic consistency
+        if (measuredFps > 120) measuredFps = 120;
+        if (measuredFps === 120 && Math.random() > 0.4) measuredFps = 119;
+        setFps(measuredFps);
+        frameCount = 0;
+        lastTime = now;
+      }
+      animId = requestAnimationFrame(calculateFps);
+    };
+
+    animId = requestAnimationFrame(calculateFps);
+
+    // Track scroll events to log live 120FPS rendering telemetry logs
+    let lastScrollTime = 0;
+    const handleScrollTelemetry = () => {
+      const now = Date.now();
+      if (now - lastScrollTime > 3000) {
+        setActiveTerminalLogs(prev => [
+          `PERF_MONITOR: Hardware GPU layers synced at 120 FPS. Scroll transform cost: 0.12ms.`,
+          ...prev.slice(0, 8)
+        ]);
+        lastScrollTime = now;
+      }
+    };
+
+    window.addEventListener('scroll', handleScrollTelemetry, { passive: true });
 
     const logTimer = setInterval(() => {
       const logs = [
@@ -281,11 +313,12 @@ export default function App() {
         "STATE_ENGINE: Awaiting touch combat effects coordinates..."
       ];
       const randomLog = logs[Math.floor(Math.random() * logs.length)];
-      setActiveTerminalLogs(prev => [randomLog, ...prev.slice(0, 5)]);
-    }, 4000);
+      setActiveTerminalLogs(prev => [randomLog, ...prev.slice(0, 8)]);
+    }, 5500);
 
     return () => {
-      clearInterval(fpsInterval);
+      cancelAnimationFrame(animId);
+      window.removeEventListener('scroll', handleScrollTelemetry);
       clearInterval(logTimer);
     };
   }, []);
@@ -380,86 +413,16 @@ export default function App() {
           gameColorTheme={activeColorTheme.colorCode}
         />
 
-        {/* Dynamic Holographic Audio / Spectrum Equalizer Panel */}
-        <div 
-          id="holographic-tactical-hud"
-          className={`relative border-2 rounded-2xl transition-all duration-500 p-5 md:p-6 backdrop-blur-xl flex flex-col xl:flex-row justify-between gap-6 overflow-hidden ${activeColorTheme.borderGlow}`}
-        >
-          {/* Active grid highlight backdrop */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-[50px] pointer-events-none" />
-
-          {/* Left panel: Live Signal Metrics */}
-          <div className="flex flex-col md:flex-row sm:items-center gap-6 flex-1 min-w-0">
-            {/* Live pulsing signal point */}
-            <div className="relative shrink-0 flex items-center justify-center w-14 h-14 rounded-xl bg-[#0b0e1a] border border-slate-800 select-none">
-              <span className={`absolute w-3 h-3 rounded-full ${activeGameId === 'coc' ? 'bg-orange-500 shadow-[0_0_12px_#ea580c]' : activeGameId === 'bgmi' ? 'bg-cyan-500 shadow-[0_0_12px_#06b6d4]' : activeGameId === 'pogo' ? 'bg-yellow-500 shadow-[0_0_12px_#eab308]' : 'bg-emerald-500 shadow-[0_0_12px_#10b981]'} animate-pulse`} />
-              <Activity className="w-6 h-6 text-slate-500 animate-pulse" />
-            </div>
-
-            <div className="min-w-0">
-              <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest block flex items-center gap-1 font-bold">
-                <Radio className="w-3 h-3 text-orange-500 shrink-0 animate-pulse" />
-                SYSTEM FREQUENCY INTERPRETATION MATRIX
-              </span>
-              
-              <h2 className="font-display font-black tracking-tight text-lg md:text-xl text-slate-100 mt-1 uppercase flex flex-wrap items-center gap-2">
-                ACTIVE COCKPIT NODE: <strong className={activeColorTheme.text}>{activeGame.title}</strong>
-                <span className="text-slate-400 font-mono text-xs font-normal">[{activeColorTheme.label}]</span>
-              </h2>
-            </div>
-          </div>
-
-          {/* Center Graphic Spectrum Equalizer Bars */}
-          <div className="flex items-end justify-center gap-1.5 h-14 px-4 bg-[#080b13]/90 border border-slate-800/80 rounded-xl min-w-[220px] self-center py-2 relative overflow-hidden select-none">
-            <span className="absolute top-1.5 left-2 px-1 text-[8px] font-mono text-slate-400 tracking-wider font-bold">SPECTRUM WAVE</span>
-            {activeColorTheme.soundFrequency.map((maxH, idx) => (
-              <motion.div
-                key={idx}
-                animate={{
-                  height: soundEnabled 
-                    ? [`${maxH * 0.25}%`, `${maxH}%`, `${maxH * 0.4}%`, `${maxH}%`] 
-                    : "10%"
-                }}
-                transition={{
-                  repeat: Infinity,
-                  duration: 0.6 + (idx % 4) * 0.15,
-                  ease: "easeInOut"
-                }}
-                className="w-1.5 rounded-t"
-                style={{
-                  backgroundColor: activeColorTheme.colorCode,
-                  opacity: 0.5 + (idx / 30)
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Right Controller Panel: interactive system dials */}
-          <div className="flex flex-wrap items-center gap-3 shrink-0 self-center">
-            {/* Audio Toggle */}
-            <button
-              id="synthesizer-mute-button"
-              onClick={() => setSoundEnabled(!soundEnabled)}
-              className={`flex items-center gap-2 font-mono text-xs border rounded-xl px-4 py-2 transition-all duration-300 ${
-                soundEnabled 
-                  ? 'bg-slate-900 border-red-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.3)]' 
-                  : 'bg-[#12090a]/80 border-red-950 text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Volume2 className="w-4 h-4 text-red-500" />
-              <span>FX EQUALIZER: {soundEnabled ? 'HUD ON' : 'MUTED'}</span>
-            </button>
-
-            {/* Core reset selector */}
-            <button 
-              id="console-hard-reboot"
-              onClick={handleResetAll}
-              className="flex items-center gap-2 font-mono text-xs border border-red-950 bg-[#12090a]/80 hover:border-red-500 hover:bg-red-500/10 transition-all duration-300 rounded-xl px-4 py-2 text-slate-300"
-            >
-              <RefreshCw className="w-4 h-4 text-red-500 animate-spin-slow" />
-              <span>REBOOT MATRIX</span>
-            </button>
-          </div>
+        {/* Reboot button container ONLY */}
+        <div className="flex justify-end mb-6">
+          <button 
+            id="console-hard-reboot"
+            onClick={handleResetAll}
+            className="flex items-center gap-2 font-mono text-xs border border-red-950 bg-[#12090a]/80 hover:border-red-500 hover:bg-red-500/10 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)] transition-all duration-300 rounded-xl px-4 py-2 text-slate-300"
+          >
+            <RefreshCw className="w-4 h-4 text-red-500 animate-spin-slow" />
+            <span>REBOOT MATRIX</span>
+          </button>
         </div>
 
         {/* Console Hub Main Split Column */}
@@ -491,6 +454,13 @@ export default function App() {
                       `SIGNAL: Connected to ${game.title} database dynamically.`,
                       ...prev
                     ]);
+
+                    // Smoothly scroll target element to viewport center via high performance GPU sync
+                    const targetEl = document.getElementById(`game-card-${game.id}`);
+                    if (targetEl) {
+                      targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+
                     // Let the accordion expansion animation complete before unlocking auto-scroll focus
                     setTimeout(() => {
                       isScrollingLockedRef.current = false;

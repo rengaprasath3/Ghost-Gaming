@@ -134,7 +134,7 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
       onClick={handleCardClick}
       whileHover={{ y: -4, scale: 1.015 }}
       transition={{ type: "spring", stiffness: 400, damping: 28 }}
-      className={`relative overflow-hidden rounded-2xl border transition-all duration-500 group cursor-pointer select-none ${
+      className={`relative overflow-hidden rounded-2xl border transition-all duration-500 group cursor-pointer select-none gpu-accelerated transform-gpu ${
         isActive ? colorConfig.borderActive : colorConfig.borderInactive
       } ${isShaking ? 'animate-card-shake' : ''}`}
     >
