@@ -38,6 +38,54 @@ export default function App() {
   // Auto-focused game node detection based on viewport scroll geometry
   const isScrollingLockedRef = useRef(false);
   const activeGameIdRef = useRef<GameID>('coc');
+  const scrollAnimationRef = useRef<number | null>(null);
+
+  // Custom step-by-step 120Hz/120FPS smooth scrolling engine with ease-in-out human inertia timing
+  const inertialScrollTo = (targetElementId: string, duration: number = 1000) => {
+    const element = document.getElementById(targetElementId);
+    if (!element) return;
+
+    if (scrollAnimationRef.current !== null) {
+      cancelAnimationFrame(scrollAnimationRef.current);
+    }
+
+    const startY = window.scrollY;
+    
+    // Calculate centering coordinate relative to browser viewport bounds under GPU transformation layers
+    const rect = element.getBoundingClientRect();
+    const elementDocTop = rect.top + window.scrollY;
+    const viewportHeight = window.innerHeight;
+    const targetY = Math.max(0, Math.min(
+      elementDocTop - (viewportHeight / 2) + (rect.height / 2),
+      document.documentElement.scrollHeight - viewportHeight
+    ));
+
+    const distance = targetY - startY;
+    if (Math.abs(distance) < 1.5) return; // ignore subpixel noise
+
+    const startTime = performance.now();
+
+    // High performance ease-in-out timing function to mimic human kinetic inertia
+    const easeInOutCubic = (t: number): number => {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    };
+
+    const animateScroll = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      const ease = easeInOutCubic(progress);
+      window.scrollTo(0, startY + distance * ease);
+
+      if (progress < 1) {
+        scrollAnimationRef.current = requestAnimationFrame(animateScroll);
+      } else {
+        scrollAnimationRef.current = null;
+      }
+    };
+
+    scrollAnimationRef.current = requestAnimationFrame(animateScroll);
+  };
 
   useEffect(() => {
     activeGameIdRef.current = activeGameId;
@@ -158,8 +206,12 @@ export default function App() {
         return;
       }
 
-      // Smoothly scroll the card element to center so player can watch the assault
-      targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Smoothly scroll the card element to center via 120 FPS inertial engine
+      isScrollingLockedRef.current = true;
+      inertialScrollTo(`game-card-${targetId}`, 1000);
+      setTimeout(() => {
+        isScrollingLockedRef.current = false;
+      }, 1050);
 
       setRobotStatus('flying');
       setActiveAttackGameId(null);
@@ -455,11 +507,8 @@ export default function App() {
                       ...prev
                     ]);
 
-                    // Smoothly scroll target element to viewport center via high performance GPU sync
-                    const targetEl = document.getElementById(`game-card-${game.id}`);
-                    if (targetEl) {
-                      targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
+                    // Smoothly scroll target element to viewport center via 120 FPS inertial engine
+                    inertialScrollTo(`game-card-${game.id}`, 1000);
 
                     // Let the accordion expansion animation complete before unlocking auto-scroll focus
                     setTimeout(() => {
