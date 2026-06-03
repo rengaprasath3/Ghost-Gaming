@@ -132,9 +132,13 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
       id={`game-card-${game.id}`}
       ref={cardRef}
       onClick={handleCardClick}
+      layout
       whileHover={{ y: -4, scale: 1.015 }}
-      transition={{ type: "spring", stiffness: 120, damping: 20 }}
-      className={`relative overflow-hidden rounded-2xl border transition-all duration-[1200ms] group cursor-pointer select-none gpu-accelerated transform-gpu ${
+      transition={{ 
+        layout: { type: "spring", stiffness: 45, damping: 15, mass: 1.2 },
+        default: { type: "spring", stiffness: 120, damping: 20 }
+      }}
+      className={`relative overflow-hidden rounded-2xl border transition-[border-color,background-color,box-shadow] duration-500 group cursor-pointer select-none gpu-accelerated transform-gpu ${
         isActive ? colorConfig.borderActive : colorConfig.borderInactive
       } ${isShaking ? 'animate-card-shake' : ''}`}
     >
@@ -188,8 +192,8 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
       <div className="p-4 sm:p-6 md:p-8 relative z-10">
         
         {/* Upper Title Block */}
-        <div className={`flex flex-col ${isActive ? 'items-center text-center w-full' : 'sm:flex-row sm:items-center justify-between'} gap-4 transition-all duration-[1200ms]`}>
-          <div className={`flex ${isActive ? 'flex-col items-center w-full' : 'flex-row items-center'} gap-4 transition-all duration-[1200ms]`}>
+        <motion.div layout className={`flex flex-col ${isActive ? 'items-center text-center w-full' : 'sm:flex-row sm:items-center justify-between'} gap-4`}>
+          <motion.div layout className={`flex ${isActive ? 'flex-col items-center w-full' : 'flex-row items-center'} gap-4`}>
             <motion.div 
               layoutId={`game-icon-container-${game.id}`}
               layout
@@ -217,25 +221,27 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
                 {game.tagline}
               </motion.p>
             </motion.div>
-          </div>
+          </motion.div>
           
           <motion.span layout className={`font-mono text-xs font-bold px-3 py-1.5 rounded-md border tracking-widest uppercase shrink-0 text-center shadow-sm ${colorConfig.badgeBg} ${isActive ? 'mt-2' : ''}`}>
             {game.badge}
           </motion.span>
-        </div>
+        </motion.div>
 
         {/* Dynamic Horizontal Level Indicator */}
-        <div className="mt-6 w-full bg-[#05060d] border border-zinc-800 h-[5px] rounded-full overflow-hidden relative">
-          <div 
+        <motion.div layout className="mt-6 w-full bg-[#05060d] border border-zinc-800 h-[5px] rounded-full overflow-hidden relative">
+          <motion.div 
+            layout
             className={`h-full rounded-full transition-all duration-[1500ms] ${colorConfig.themeGlow}`}
             style={{ width: isActive ? '100%' : '25%' }}
           />
-        </div>
+        </motion.div>
 
         {/* Major Stat Widgets Row */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3.5 mt-5">
+        <motion.div layout className="grid grid-cols-3 gap-2 sm:gap-3.5 mt-5">
           {game.mainStats.map((stat, idx) => (
-            <div 
+            <motion.div 
+              layout
               key={idx} 
               className={`border p-2 sm:p-3 rounded-lg sm:rounded-xl text-center backdrop-blur-md transition-all duration-300 ${
                 isActive ? 'bg-[#121426]/90 border-zinc-700/60 shadow-md' : 'bg-[#090b14]/75 border-zinc-800/80 group-hover:border-zinc-700'
@@ -247,9 +253,9 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
               <div className={`text-xs md:text-sm font-black font-mono mt-1 ${stat.highlight ? colorConfig.textAccent : 'text-slate-250 text-slate-200'}`}>
                 {stat.value}
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Dynamic expanding segment built on framer-motion AnimatePresence */}
         <AnimatePresence initial={false}>
