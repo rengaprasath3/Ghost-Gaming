@@ -18,172 +18,30 @@ import {
   ShieldAlert, 
   Cpu, 
   Sliders, 
-  Check, 
   Terminal, 
-  Zap, 
-  Eye,
-  Settings,
   FlameKindling
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import GameIcon from './components/GameIcon';
 
 export default function App() {
   const [activeGameId, setActiveGameId] = useState<GameID>('coc');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
-  const [activeTerminalLogs, setActiveTerminalLogs] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState<'profile' | 'diagnostics'>('profile');
+  const [activeTerminalLogs, setActiveTerminalLogs] = useState<string[]>([
+    "CORE_LINK: Initialized secure operator tunnel.",
+    "SYS_STAGE: Cockpit displays linked at 120Hz.",
+    "IDENTITY: Logged in successfully as operator Renga."
+  ]);
   const [fps, setFps] = useState<number>(120);
   const [isRebooting, setIsRebooting] = useState<boolean>(false);
 
-  // Auto-focused game node detection based on viewport scroll geometry
-  const isScrollingLockedRef = useRef(false);
+  // References for scroll tracking to prevent choppy UI state feedback-loops
   const activeGameIdRef = useRef<GameID>('coc');
-  const scrollAnimationRef = useRef<number | null>(null);
-
-  // High fidelity spring-physics 120Hz smooth scrolling engine tracking dynamic element center coordinates
-  const inertialScrollTo = (targetElementId: string, _duration: number = 1000, onComplete?: () => void) => {
-    const element = document.getElementById(targetElementId);
-    if (!element) {
-      if (onComplete) onComplete();
-      return;
-    }
-
-    if (scrollAnimationRef.current !== null) {
-      cancelAnimationFrame(scrollAnimationRef.current);
-    }
-
-    let y = window.scrollY;
-    let vy = 0;
-    let lastFrameTime = performance.now();
-
-    // Velvety smooth, highly responsive iOS-level kinetic parameters with rapid settle time
-    const stiffness = 160; // High premium tension for responsive, responsive tracking
-    const damping = 22;    // Superb damping ratio to quickly arrest momentum and avoid micro-jitter
-    const mass = 0.85;     // Snappy, lightweight kinetic mass for natural immediate gliding
-
-    let targetY = y;
-    let frameCounter = 0;
-
-    const updateTargetY = () => {
-      const rect = element.getBoundingClientRect();
-      const elementDocTop = rect.top + window.scrollY;
-      const viewportHeight = window.innerHeight;
-      const width = window.innerWidth;
-      const topOffset = width >= 1024 ? 90 : (width >= 768 ? 64 : 32);
-      targetY = Math.max(0, Math.min(
-        elementDocTop - topOffset,
-        document.documentElement.scrollHeight - viewportHeight
-      ));
-    };
-
-    // Run first calculation immediately
-    updateTargetY();
-
-    const animateScrollStep = (currentTime: number) => {
-      let dt = (currentTime - lastFrameTime) / 1000;
-      // Safeguard against layout freezing or background tab context pausing
-      if (dt > 0.08) dt = 0.08;
-      // Also prevent dt from being 0 on instant callbacks
-      if (dt <= 0) dt = 0.008;
-      lastFrameTime = currentTime;
-
-      // Query bounding rect once every 6 frames (rather than on every single frame) to completely avoid forced synchronous layouts and lag
-      frameCounter++;
-      if (frameCounter % 6 === 0) {
-        updateTargetY();
-      }
-
-      const diff = targetY - y;
-
-      // Settle thresholds for smooth, instantaneous noise-free arrest
-      if (Math.abs(diff) < 0.5 && Math.abs(vy) < 0.5) {
-        window.scrollTo(0, targetY);
-        scrollAnimationRef.current = null;
-        if (onComplete) onComplete();
-        return;
-      }
-
-      // 4x sub-stepping integration loop for absolute mathematical precision and zero-jitter updates
-      const substeps = 4;
-      const subDt = dt / substeps;
-      for (let i = 0; i < substeps; i++) {
-        const currentDiff = targetY - y;
-        const springForce = currentDiff * stiffness;
-        const dampingForce = vy * damping;
-        const acceleration = (springForce - dampingForce) / mass;
-        vy += acceleration * subDt;
-        y += vy * subDt;
-      }
-
-      window.scrollTo(0, y);
-
-      scrollAnimationRef.current = requestAnimationFrame(animateScrollStep);
-    };
-
-    scrollAnimationRef.current = requestAnimationFrame(animateScrollStep);
-  };
+  const isScrollingLockedRef = useRef<boolean>(false);
 
   useEffect(() => {
     activeGameIdRef.current = activeGameId;
   }, [activeGameId]);
-
-  useEffect(() => {
-    let lastChecked = 0;
-    let throttleTimeout: NodeJS.Timeout | null = null;
-
-    const performScrollCheck = () => {
-      if (isScrollingLockedRef.current) return;
-
-      const gameIds: GameID[] = ['coc', 'bgmi', 'pogo', 'chess'];
-      const viewportCenterY = window.innerHeight / 2;
-
-      let closestGameId: GameID | null = null;
-      let minDistance = Infinity;
-
-      gameIds.forEach(id => {
-        const el = document.getElementById(`game-card-${id}`);
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          // Calculate center point of the card relative to viewport bounds
-          const cardCenterY = rect.top + rect.height / 2;
-          const distance = Math.abs(cardCenterY - viewportCenterY);
-          if (distance < minDistance) {
-            minDistance = distance;
-            closestGameId = id;
-          }
-        }
-      });
-
-      if (closestGameId && closestGameId !== activeGameIdRef.current) {
-        setActiveGameId(closestGameId);
-        setActiveTerminalLogs(prev => [
-          `SCROLL_AUTO: Auto-opened cockpit focus on [${closestGameId!.toUpperCase()}] database.`,
-          ...prev.slice(0, 15) // Keep size small to prevent state bloat lag
-        ]);
-      }
-    };
-
-    const handleScroll = () => {
-      const now = Date.now();
-      // Throttle viewport checks to once every 150ms to ensure 120 FPS scrolling speeds
-      if (now - lastChecked > 150) {
-        performScrollCheck();
-        lastChecked = now;
-      }
-
-      // Debounce fallback to ensure we catch the final scroll resting state
-      if (throttleTimeout) clearTimeout(throttleTimeout);
-      throttleTimeout = setTimeout(() => {
-        performScrollCheck();
-      }, 150);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      if (throttleTimeout) clearTimeout(throttleTimeout);
-    };
-  }, []);
 
   // Floating robot flight states
   const [robotStatus, setRobotStatus] = useState<'idle' | 'charging' | 'flying' | 'targeting' | 'firing' | 'returning'>('idle');
@@ -191,6 +49,138 @@ export default function App() {
   const [destPos, setDestPos] = useState({ x: 0, y: 0 });
   const [activeAttackGameId, setActiveAttackGameId] = useState<GameID | null>(null);
   const [laserBeams, setLaserBeams] = useState<{ id: number; x1: number; y1: number; x2: number; y2: number }[]>([]);
+
+  // Telemetry updates
+  useEffect(() => {
+    let lastTime = performance.now();
+    let frameCount = 0;
+    let animId: number;
+
+    const calculateFps = () => {
+      frameCount++;
+      const now = performance.now();
+      const elapsed = now - lastTime;
+
+      if (elapsed >= 500) {
+        let measuredFps = Math.round((frameCount * 1000) / elapsed);
+        if (measuredFps > 120) measuredFps = 120;
+        setFps(measuredFps);
+        frameCount = 0;
+        lastTime = now;
+      }
+      animId = requestAnimationFrame(calculateFps);
+    };
+
+    animId = requestAnimationFrame(calculateFps);
+
+    const logTimer = setInterval(() => {
+      const logs = [
+        "SYS_GRID: Auto-leveling graphics engine raster...",
+        "NET_TELEMETRY: Checked latency bounds: 8ms OK.",
+        "HOLOGRAPH_CORE: 120 FPS render baseline locked.",
+        "SYS_SECURITY: Cloud connection is active & secure."
+      ];
+      const randomLog = logs[Math.floor(Math.random() * logs.length)];
+      setActiveTerminalLogs(prev => [randomLog, ...prev.slice(0, 15)]);
+    }, 8000);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      clearInterval(logTimer);
+    };
+  }, []);
+
+  // Sync scroll positioning to highlighted segment index
+  useEffect(() => {
+    const gameIds: GameID[] = ['coc', 'bgmi', 'pogo', 'chess'];
+    const ratiosMap: { [key in GameID]?: number } = {};
+
+    const observerOptions = {
+      root: null,
+      rootMargin: "-25% 0px -25% 0px", // Focus selection in the middle 50% band
+      threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    };
+
+    const handleIntersect = (entries: IntersectionObserverEntry[]) => {
+      if (isScrollingLockedRef.current) return;
+
+      entries.forEach(entry => {
+        const id = entry.target.id.replace('game-feed-card-', '') as GameID;
+        if (gameIds.includes(id)) {
+          ratiosMap[id] = entry.intersectionRatio;
+        }
+      });
+
+      let maxRatio = -1;
+      let closestGameId: GameID | null = null;
+
+      gameIds.forEach(id => {
+        const ratio = ratiosMap[id] || 0;
+        if (ratio > maxRatio) {
+          maxRatio = ratio;
+          closestGameId = id;
+        }
+      });
+
+      if (closestGameId && maxRatio > 0.15 && closestGameId !== activeGameIdRef.current) {
+        setActiveGameId(closestGameId);
+        setActiveTerminalLogs(prev => [
+          `TELEMETRY_LINK: Focus switched to Sector Link [${closestGameId!.toUpperCase()}].`,
+          ...prev.slice(0, 15)
+        ]);
+      }
+    };
+
+    const observer = new IntersectionObserver(handleIntersect, observerOptions);
+
+    const timer = setTimeout(() => {
+      gameIds.forEach(id => {
+        const el = document.getElementById(`game-feed-card-${id}`);
+        if (el) observer.observe(el);
+      });
+    }, 250);
+
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, []);
+
+  const activeGame = GAMES_DATA.find(g => g.id === activeGameId) || GAMES_DATA[0];
+
+  const handleGameSelect = (id: GameID) => {
+    setActiveGameId(id);
+    playSound(id as any);
+    setActiveTerminalLogs(prev => [
+      `SIGNAL: Dynamic link focused on Segment [${id.toUpperCase()}].`,
+      ...prev.slice(0, 15)
+    ]);
+
+    isScrollingLockedRef.current = true;
+    const el = document.getElementById(`game-feed-card-${id}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    setTimeout(() => {
+      isScrollingLockedRef.current = false;
+    }, 850);
+  };
+
+  const handleResetAll = () => {
+    setIsRebooting(true);
+    playSound('reboot');
+  };
+
+  const handleRebootComplete = () => {
+    setIsRebooting(false);
+    setActiveGameId('coc');
+    setActiveTerminalLogs([
+      "CORE_LINK: Reset sequence verified by terminal user Renga.",
+      "SYS: Restored dynamic TownHall 18 state matrices...",
+      "MATRIX: Dynamic IST timeline resynchronized successfully!"
+    ]);
+  };
 
   // Orchestrator method for combat drone flight
   const initiateRobotAssault = () => {
@@ -200,7 +190,7 @@ export default function App() {
     if (!avatarEl) {
       setActiveTerminalLogs(prev => [
         `ERROR: Clown summoning failed. Base coordinates obscured or files corrupted.`,
-        ...prev
+        ...prev.slice(0, 15)
       ]);
       return;
     }
@@ -213,30 +203,27 @@ export default function App() {
     setRobotStatus('charging');
 
     setActiveTerminalLogs(prev => [
-      `SYS_WAR: [CLOWN ACTIVATED] - Manic mascot pre-heating plasma engine and grinning...`,
-      ...prev
+      `SYS_WAR: [CLOWN ACTIVATION APPROVED] - Companion pre-heating tactical systems...`,
+      ...prev.slice(0, 15)
     ]);
 
     const gameIds: GameID[] = ['coc', 'bgmi', 'pogo', 'chess'];
 
-    // Timed recursive path flow over every card
     const runAttackSequence = (index: number) => {
       if (index >= gameIds.length) {
-        // Complete sweep! Clown returns home
         setRobotStatus('returning');
         setActiveAttackGameId(null);
         setLaserBeams([]);
         setActiveTerminalLogs(prev => [
-          `COMPLETED: All sectors cleared! Clown madness concluded. Returning to base database.`,
-          ...prev
+          `COMPLETED: All deck links swept! Mascot returning to core base slot.`,
+          ...prev.slice(0, 15)
         ]);
 
-        // Flight home transition duration
         setTimeout(() => {
           setRobotStatus('idle');
           setActiveTerminalLogs(prev => [
-            `SYS_LINK: Clown docked as baseline emblem. Relink stability: OK.`,
-            ...prev
+            `SYS_LINK: Clown mascot safely re-docked. Relink status: OK.`,
+            ...prev.slice(0, 15)
           ]);
         }, 1100);
         return;
@@ -245,22 +232,14 @@ export default function App() {
       const targetId = gameIds[index];
       const targetEl = document.getElementById(`game-card-${targetId}`);
       if (!targetEl) {
-        // Skip card if not rendered
         runAttackSequence(index + 1);
         return;
       }
-
-      // Smoothly scroll the card element to center via 120 FPS inertial engine
-      isScrollingLockedRef.current = true;
-      inertialScrollTo(`game-card-${targetId}`, 1000, () => {
-        isScrollingLockedRef.current = false;
-      });
 
       setRobotStatus('flying');
       setActiveAttackGameId(null);
       setLaserBeams([]);
 
-      // Continuously fetch and update coordinates dynamically during flight
       const updateDestPosition = () => {
         const freshEl = document.getElementById(`game-card-${targetId}`);
         if (freshEl) {
@@ -275,41 +254,37 @@ export default function App() {
       updateDestPosition();
 
       setActiveTerminalLogs(prev => [
-        `COMMAND: Clown flying down coordinates! Trajectory lock set on Grid Sector: [${targetId.toUpperCase()}]`,
-        ...prev
+        `COMMAND: Propelling clown mascot to Sector Deck [${targetId.toUpperCase()}].`,
+        ...prev.slice(0, 15)
       ]);
 
-      // Flight time to travel (900ms)
       setTimeout(() => {
         setRobotStatus('targeting');
         updateDestPosition();
         setActiveTerminalLogs(prev => [
-          `TELEMETRY: Clown hovering. Plasma strike lock-status: LOCKED. Target grid: ${targetId.toUpperCase()}`,
-          ...prev
+          `TELEMETRY: Lock status: LOCKED. Preparing plasma blast on link ${targetId.toUpperCase()}...`,
+          ...prev.slice(0, 15)
         ]);
 
-        // Spend 500ms for lock flare effect, then open jaws and breathe fire!
         setTimeout(() => {
           setRobotStatus('firing');
           setActiveAttackGameId(targetId);
           updateDestPosition();
           playSound('fire');
           setActiveTerminalLogs(prev => [
-            `FIREPOWER: 🤡 Clown unleashing manic plasma energy onto Sector ${targetId.toUpperCase()}! Base databases under severe fire!`,
-            ...prev
+            `FIREPOWER: 🤡 Clown unleashing tactical plasma energy onto [${targetId.toUpperCase()}].`,
+            ...prev.slice(0, 15)
           ]);
 
           let wavesFired = 0;
-          const totalWaves = 6;
+          const totalWaves = 4;
           const fireInterval = setInterval(() => {
             if (wavesFired >= totalWaves) {
               clearInterval(fireInterval);
               setLaserBeams([]);
-              
-              // Proceed sweep to next waypoints after brief exhaust cooling
               setTimeout(() => {
                 runAttackSequence(index + 1);
-              }, 250);
+              }, 150);
               return;
             }
 
@@ -318,194 +293,54 @@ export default function App() {
               const rect = freshEl.getBoundingClientRect();
               const endX = rect.left + rect.width / 2;
               const endY = rect.top + rect.height / 2;
-              const currentRobotY = endY - 80;
+              const currentRobotY = endY - 85;
 
-              // Scatter flames across the card size
-              const targetXVar = endX - 120 + Math.random() * 240;
-              const targetYVar = endY - 70 + Math.random() * 140;
+              const targetXVar = endX - 45 + Math.random() * 90;
+              const targetYVar = endY - 25 + Math.random() * 50;
 
               setLaserBeams([
                 {
                   id: Math.random(),
                   x1: endX,
-                  y1: currentRobotY + 32, // Position coordinate corresponds to mouth opening of Clown
+                  y1: currentRobotY + 28,
                   x2: targetXVar,
                   y2: targetYVar
-                },
-                {
-                  id: Math.random(),
-                  x1: endX + (Math.random() - 0.5) * 8,
-                  y1: currentRobotY + 32,
-                  x2: targetXVar - 40 + Math.random() * 80,
-                  y2: targetYVar - 45 + Math.random() * 90
                 }
               ]);
 
-              // Dispatch explosive laser-hit event
               window.dispatchEvent(new CustomEvent('robot-laser-hit', { detail: { targetId } }));
             }
 
             wavesFired++;
-          }, 180);
+          }, 150);
 
-        }, 500);
+        }, 450);
 
-      }, 900);
+      }, 850);
     };
 
-    // Charge power at base coordinates for 1200ms before soaring out
     setTimeout(() => {
       runAttackSequence(0);
-    }, 1200);
+    }, 1000);
   };
 
-  // Real-time 120Hz Frame-Rate Meter & Performance Monitor
-  useEffect(() => {
-    let lastTime = performance.now();
-    let frameCount = 0;
-    let animId: number;
-
-    const calculateFps = () => {
-      frameCount++;
-      const now = performance.now();
-      const elapsed = now - lastTime;
-
-      if (elapsed >= 500) {
-        let measuredFps = Math.round((frameCount * 1000) / elapsed);
-        // Map high-refresh monitors to 119-120 limits for retro gaming aesthetic consistency
-        if (measuredFps > 120) measuredFps = 120;
-        if (measuredFps === 120 && Math.random() > 0.4) measuredFps = 119;
-        setFps(measuredFps);
-        frameCount = 0;
-        lastTime = now;
-      }
-      animId = requestAnimationFrame(calculateFps);
-    };
-
-    animId = requestAnimationFrame(calculateFps);
-
-    // Track scroll events to log live 120FPS rendering telemetry logs
-    let lastScrollTime = 0;
-    let telemetryTicking = false;
-    const handleScrollTelemetry = () => {
-      if (telemetryTicking) return;
-      telemetryTicking = true;
-
-      window.requestAnimationFrame(() => {
-        telemetryTicking = false;
-        const now = Date.now();
-        if (now - lastScrollTime > 3000) {
-          setActiveTerminalLogs(prev => [
-            `PERF_MONITOR: Hardware GPU layers synced at 120 FPS. Scroll transform cost: 0.12ms.`,
-            ...prev.slice(0, 8)
-          ]);
-          lastScrollTime = now;
-          telemetryTicking = false;
-        }
-      });
-    };
-
-    window.addEventListener('scroll', handleScrollTelemetry, { passive: true });
-
-    const logTimer = setInterval(() => {
-      const logs = [
-        "SYS_GRID: Stabilized dynamic asset loading sequence...",
-        "NET_TELEMETRY: Packets linking verified with Sector-India servers.",
-        "HOLOGRAPH_CORE: 120 FPS rendering is running at optimal peak.",
-        "SYS_SECURITY: Identity logs matching profile usernames.",
-        "STATE_ENGINE: Awaiting touch combat effects coordinates..."
-      ];
-      const randomLog = logs[Math.floor(Math.random() * logs.length)];
-      setActiveTerminalLogs(prev => [randomLog, ...prev.slice(0, 8)]);
-    }, 5500);
-
-    return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener('scroll', handleScrollTelemetry);
-      clearInterval(logTimer);
-    };
-  }, []);
-
-  const activeGame = GAMES_DATA.find(g => g.id === activeGameId) || GAMES_DATA[0];
-
-  const handleResetAll = () => {
-    setIsRebooting(true);
-    playSound('reboot');
-  };
-
-  const handleRebootComplete = () => {
-    setIsRebooting(false);
-    setActiveGameId('coc');
-    setActiveTerminalLogs([
-      "CORE_LINK: Reset sequence verified by terminal user Renga.",
-      "SYS: Restored primary TownHall 18 state matrices...",
-      "MATRIX: Dynamic IST timeline resynchronized successfully!"
-    ]);
-  };
-
-  // Sound spectrum configurations
   const activeColorTheme = {
-    'coc': {
-      text: 'text-red-400',
-      borderGlow: 'border-red-650/35 bg-[#0e0607]/90 shadow-[0_12px_45px_rgba(239,68,68,0.18)]',
-      label: 'COC // RETRIEVED: Renga',
-      colorCode: '#ef4444',
-      soundFrequency: [12, 18, 25, 42, 60, 48, 30, 20, 36, 12, 38, 55, 40, 18, 5]
-    },
-    'bgmi': {
-      text: 'text-red-500',
-      borderGlow: 'border-red-700/35 bg-[#0e0607]/90 shadow-[0_12px_45px_rgba(190,18,60,0.18)]',
-      label: 'BGMI // RETRIEVED: Clown Ghost',
-      colorCode: '#be123c',
-      soundFrequency: [30, 48, 62, 75, 40, 25, 58, 68, 72, 85, 44, 30, 60, 48, 25]
-    },
-    'pogo': {
-      text: 'text-amber-550 text-amber-500',
-      borderGlow: 'border-amber-600/35 bg-[#0e0607]/90 shadow-[0_12px_45px_rgba(217,119,6,0.18)]',
-      label: 'POGO // RETRIEVED: Rengaprasath',
-      colorCode: '#d97706',
-      soundFrequency: [18, 28, 48, 32, 15, 45, 60, 40, 55, 65, 38, 25, 48, 20, 12]
-    },
-    'chess': {
-      text: 'text-red-500',
-      borderGlow: 'border-red-800/35 bg-[#0e0607]/90 shadow-[0_12px_45px_rgba(153,27,27,0.18)]',
-      label: 'CHESS // RETRIEVED: Renga',
-      colorCode: '#991b1b',
-      soundFrequency: [5, 12, 18, 24, 30, 35, 40, 42, 38, 30, 24, 18, 12, 6, 2]
-    }
-  }[activeGameId];
-
-  // Tactical observer commentary matching active state
-  const activeCommentary = {
-    'coc': "🔥 Defending Renga's Legend League with elite base configurations in Sector India. Active clan 'tamilanda' is currently initiating strategic Clan War sieges.",
-    'bgmi': "🎯 Clown Ghost sniper systems deployed at maximum efficiency. Current battle matches represent a calibrated F/D ratio of 3.1.",
-    'pogo': "⚡ Rengaprasath has initiated high-speed mystic raids. Stardust metrics verified at 45.2 Million in local sector.",
-    'chess': "♟️ Renga ELO 200 strategy online. Psychological confusion rating stands at 100%. Highly dangerous blunders imminent."
+    'coc': '#ef4444',
+    'bgmi': '#be123c',
+    'pogo': '#d97706',
+    'chess': '#991b1b'
   }[activeGameId];
 
   return (
-    <div className="min-h-screen bg-cyber-bg text-slate-100 selection:bg-red-600 selection:text-white font-sans relative overflow-x-hidden p-2.5 sm:p-5 md:p-8">
+    <div className="min-h-screen bg-cyber-bg text-slate-100 selection:bg-red-600 selection:text-white font-sans relative overflow-x-hidden p-3 sm:p-6 md:p-8">
       
       {/* Background aesthetics */}
       <div className="absolute inset-0 cyber-grid opacity-65 pointer-events-none z-0" />
       <div className="absolute inset-0 scanlines opacity-10 pointer-events-none z-0" />
       
       {/* Dynamic drifting background glows */}
-      <div className="absolute top-1/4 left-1/4 w-[450px] h-[450px] bg-red-600/5 rounded-full blur-[110px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-[#3e0809]/10 rounded-full blur-[130px] pointer-events-none" />
-
-      {/* Futuristic Fixed Navigation pillars & decorative rails */}
-      <div className="fixed left-3 top-1/2 -translate-y-1/2 writing-mode-vertical hidden xl:flex flex-col items-center gap-3.5 font-mono text-[9px] text-red-500 uppercase tracking-[0.35em] pointer-events-none select-none z-30">
-        <Cpu className="w-3.5 h-3.5 text-red-500" />
-        <span>ANCIENT COCKPIT PORTFOLIO // SS9</span>
-        <span className="w-[1.5px] h-24 bg-gradient-to-b from-red-650/40 to-transparent" />
-      </div>
-
-      <div className="fixed right-3 top-1/2 -translate-y-1/2 writing-mode-vertical hidden xl:flex flex-col items-center gap-3.5 font-mono text-[9px] text-red-500 uppercase tracking-[0.35em] pointer-events-none select-none z-30">
-        <span>STABLE EMULATION COMPILED</span>
-        <span className="w-[1.5px] h-24 bg-gradient-to-b from-red-650/40 to-transparent" />
-        <Activity className="w-3.5 h-3.5 text-red-500" />
-      </div>
+      <div className="absolute top-1/4 left-1/4 w-[350px] h-[350px] bg-red-600/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-[#3e0809]/5 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         
@@ -513,83 +348,159 @@ export default function App() {
         <GamerHeader 
           onRobotAttack={initiateRobotAssault} 
           robotStatus={robotStatus} 
-          gameColorTheme={activeColorTheme.colorCode}
+          gameColorTheme={activeColorTheme}
         />
 
-        {/* Reboot button container ONLY */}
+        {/* Global actions control */}
         <div className="flex justify-center sm:justify-end mb-6">
           <button 
             id="console-hard-reboot"
             onClick={handleResetAll}
-            className="flex items-center gap-2 font-mono text-xs border border-red-950 bg-[#12090a]/80 hover:border-red-500 hover:bg-red-500/10 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)] transition-all duration-300 rounded-xl px-4 py-2 text-slate-300"
+            className="flex items-center gap-2 font-mono text-xs border border-red-950 bg-[#12090a]/80 hover:border-red-500 hover:bg-red-500/10 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)] transition-all duration-300 rounded-xl px-4 py-2 text-slate-300 shadow-lg"
           >
             <RefreshCw className="w-4 h-4 text-red-500 animate-spin-slow" />
-            <span>REBOOT MATRIX</span>
+            <span>REBOOT SYSTEM MATRIX</span>
           </button>
         </div>
 
-        {/* Console Hub Main Split Column */}
+        {/* Dual-Pane Dashboard Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-8">
           
-          {/* Main Games Portfolio Cards (occupies 8 columns on desktop) */}
-          <div id="games-grid-wrapper" className="lg:col-span-8 flex flex-col gap-6">
-            <div className="flex items-center justify-between border-b border-red-950/80 pb-3">
-              <h3 className="font-display font-extrabold tracking-wider text-sm md:text-base flex items-center gap-2 text-white">
-                <Gamepad2 className="w-5 h-5 text-red-600 animate-pulse" />
-                <span className="old-age-title text-sm md:text-base">GAMES DIRECTORY & PROFILE PORTAL</span>
+          {/* LEFT: Central Display Cockpit */}
+          <div id="active-game-viewport" className="lg:col-span-8 flex flex-col gap-6 scroll-mt-6">
+            <div className="flex items-center justify-between border-b border-red-950 pb-2 mb-4">
+              <h3 className="font-display font-extrabold tracking-wider text-xs sm:text-sm flex items-center gap-2 text-white">
+                <Gamepad2 className="w-4.5 h-4.5 text-red-650 text-red-550 animate-pulse" />
+                <span>DYNAMIC COCKPIT SECTOR FEED</span>
               </h3>
-              <span className="font-mono text-[10px] text-slate-400">
-                TOTAL INTEGRATIONS: 4 // OPERATOR STATE: OK
+              <span className="font-mono text-[9px] text-red-400 font-extrabold bg-red-950/40 px-2 py-0.5 rounded border border-red-900/55 tracking-widest uppercase">
+                LINK ACCELERATORS ACTIVE // GPU 120HZ
               </span>
             </div>
 
-            <div id="games-display-grid" className="grid grid-cols-1 gap-6">
+            <div className="flex flex-col gap-10 md:gap-14">
               {GAMES_DATA.map(game => (
-                <GameCard
-                  key={game.id}
-                  game={game}
-                  isActive={activeGameId === game.id}
-                  onSelect={() => {
-                    isScrollingLockedRef.current = true;
-                    setActiveGameId(game.id);
-                    // Append diagnostic log of active node shift
-                    setActiveTerminalLogs(prev => [
-                      `SIGNAL: Connected to ${game.title} database dynamically.`,
-                      ...prev.slice(0, 15)
-                    ]);
-
-                    // Smoothly scroll target element to viewport center via 120 FPS inertial engine
-                    inertialScrollTo(`game-card-${game.id}`, 1000, () => {
-                      isScrollingLockedRef.current = false;
-                    });
-                  }}
-                />
+                <div key={game.id} id={`game-feed-card-${game.id}`} className="scroll-mt-24">
+                  <GameCard
+                    game={game}
+                    isActive={activeGameId === game.id}
+                  />
+                </div>
               ))}
             </div>
           </div>
 
-          {/* Right Holographic Control & Log Terminal Column (occupies 4 columns) */}
-          <div id="control-terminal-pillar" className="lg:col-span-4 flex flex-col gap-6 lg:sticky lg:top-8">
+          {/* RIGHT: Tactical Control deck & Diagnostics panel */}
+          <div className="lg:col-span-4 flex flex-col gap-6 lg:sticky lg:top-8">
             
-            {/* Live Performance System Diagnostics Tracker */}
-            <div className="rounded-2xl border border-white/20 bg-[#12090a]/90 p-5 shadow-[0_8px_25px_rgba(0,0,0,0.15)] relative overflow-hidden hover:border-white/40 transition-colors duration-300">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full blur-[40px] pointer-events-none" />
-              
-              <h4 className="font-display font-black text-xs uppercase tracking-widest text-slate-200 mb-4 pb-2 border-b border-white/10 flex items-center justify-between">
-                <span className="old-age-title text-xs">SYSTEM PERFORMANCE</span>
-                <Sliders className="w-4 h-4 text-red-500 animate-pulse" />
+            {/* 1. Emulation deck quick selection links */}
+            <div className="rounded-2xl border border-white/20 bg-[#12090a]/90 p-5 shadow-[0_8px_25px_rgba(0,0,0,0.25)] hover:border-white/30 transition-all duration-300">
+              <h4 className="font-display font-black text-xs uppercase tracking-widest text-slate-200 mb-3 pb-2 border-b border-white/10 flex items-center justify-between">
+                <span className="old-age-title text-xs">EMULATION LINKS COCKPIT</span>
+                <Sliders className="w-4 h-4 text-red-500" />
               </h4>
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-2.5">
+                {GAMES_DATA.map(game => {
+                  const isSelected = activeGameId === game.id;
+                  const borderTheme = {
+                    'coc': 'border-red-500 bg-red-950/20 text-red-400 shadow-[0_0_12px_rgba(239,68,68,0.1)]',
+                    'bgmi': 'border-red-650 bg-red-950/20 text-red-400 shadow-[0_0_12px_rgba(225,29,72,0.1)]',
+                    'pogo': 'border-amber-500 bg-amber-950/20 text-amber-500 shadow-[0_0_12px_rgba(217,119,6,0.1)]',
+                    'chess': 'border-emerald-500 bg-emerald-950/20 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.1)]'
+                  }[game.id];
+
+                  return (
+                    <button
+                      key={game.id}
+                      id={`game-card-${game.id}`}
+                      onClick={() => handleGameSelect(game.id)}
+                      className={`w-full text-left rounded-xl border p-3 flex @container items-center justify-between transition-all duration-300 transform hover:translate-x-1 ${
+                        isSelected 
+                          ? `${borderTheme} font-extrabold border-2`
+                          : 'border-white/5 bg-[#090505]/95 hover:border-white/20 hover:bg-[#120607]/80 text-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-zinc-950 flex items-center justify-center p-1 border border-white/10 shrink-0">
+                          <GameIcon gameId={game.id} className="w-full h-full" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-white tracking-wide">{game.title}</span>
+                          <span className="text-[9px] font-mono text-slate-400 truncate max-w-[150px]">{game.tagline}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-col items-end gap-1 font-mono shrink-0">
+                        <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-black tracking-widest text-[#ef4444] block">
+                          {game.badge.split(' ')[0]}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 2. Dr. Clown Mascot sweep combat centre */}
+            <div className="rounded-2xl border border-white/20 bg-[#12090a]/90 p-5 shadow-[0_8px_25px_rgba(0,0,0,0.25)] hover:border-white/30 transition-all duration-300">
+              <h4 className="font-display font-black text-xs uppercase tracking-widest text-slate-200 mb-2 pb-2 border-b border-white/10 flex items-center justify-between">
+                <span className="old-age-title text-xs">COCKPIT SECURITY ASSAULT</span>
+                <FlameKindling className="w-4 h-4 text-orange-500 animate-pulse" />
+              </h4>
+              <p className="text-[9.5px] font-mono text-slate-400 leading-normal mb-4">
+                Launch Mascot sweep. The tactical Companion Drone flies from header, Locks on selectors sequentially, and unleashes plasma fireworks.
+              </p>
+              <button
+                onClick={initiateRobotAssault}
+                disabled={robotStatus !== 'idle'}
+                className={`w-full py-2.5 px-4 font-mono text-xs rounded-xl border tracking-widest font-black uppercase transition-all duration-300 flex items-center justify-center gap-2 ${
+                  robotStatus !== 'idle'
+                    ? 'bg-zinc-800/40 border-zinc-700 text-zinc-500 cursor-not-allowed animate-pulse'
+                    : 'bg-red-650/25 border-red-500 hover:bg-red-500 hover:text-white text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.12)] hover:shadow-[0_0_25px_rgba(239,68,68,0.35)]'
+                }`}
+              >
+                <span>{robotStatus === 'idle' ? '🔥 TRIGGER CLOWN SWEEP' : `SWEEP STATE: ${robotStatus.toUpperCase()}`}</span>
+              </button>
+            </div>
+
+            {/* 3. Terminal Feeds diagnostics */}
+            <div className="rounded-2xl border border-white/20 bg-[#12090a]/90 p-5 shadow-[0_8px_25px_rgba(0,0,0,0.25)] hover:border-white/30 transition-colors duration-300">
+              <h4 className="font-display font-black text-xs uppercase tracking-widest text-slate-200 mb-3 pb-2 border-b border-white/10 flex items-center justify-between">
+                <span className="old-age-title text-xs">TELEMETRY DIAGNOSTIC STREAM</span>
+                <Terminal className="w-3.5 h-3.5 text-red-500" />
+              </h4>
+
+              <div className="bg-[#050202] border border-white/10 p-3 rounded-xl font-mono text-[9px] space-y-1.5 h-[130px] overflow-y-auto">
+                {activeTerminalLogs.length === 0 ? (
+                  <div className="text-slate-500 italic">No signals logged.</div>
+                ) : (
+                  activeTerminalLogs.map((log, lIdx) => (
+                    <div key={lIdx} className="text-slate-300 border-l-2 border-red-500/40 pl-2 leading-relaxed">
+                      <span className="text-red-700/60 mr-1">[{new Date().toLocaleTimeString().substring(0, 8)}]</span>
+                      {log}
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="mt-2 text-[8px] font-mono text-slate-500 flex justify-between font-bold">
+                <span>FEED: EMULATE // LINK</span>
+                <span className="text-emerald-400 animate-pulse">● FEED SECURED</span>
+              </div>
+            </div>
+
+            {/* Live Performance System Diagnostics Tracker */}
+            <div className="rounded-2xl border border-white/20 bg-[#12090a]/90 p-5 shadow-[0_8px_25px_rgba(0,0,0,0.25)] relative overflow-hidden hover:border-white/30 transition-colors duration-300">
+              <div className="space-y-3.5">
                 {/* 120 FPS Metric */}
                 <div>
                   <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 mb-1">
-                    <span>DYNAMIC REACTION SPEED</span>
+                    <span>HARDWARE ACCELERATION RATE</span>
                     <strong className="text-red-400 text-xs font-black">{fps} FPS</strong>
                   </div>
-                  <div className="w-full h-1.5 bg-slate-950/60 rounded-full overflow-hidden">
+                  <div className="w-full h-1 bg-slate-950/65 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-gradient-to-r from-red-800 to-red-500 rounded-full transition-all duration-300"
-                      style={{ width: `${(fps / 122) * 100}%` }}
+                      className="h-full bg-red-500 transition-all duration-300"
+                      style={{ width: `${(fps / 120) * 100}%` }}
                     />
                   </div>
                 </div>
@@ -597,50 +508,13 @@ export default function App() {
                 {/* Account Linked Ratio */}
                 <div>
                   <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 mb-1">
-                    <span>ACCOUNT LINKAGE PROGRESS</span>
-                    <strong className="text-emerald-400 text-xs font-black">4 / 4 STABLE</strong>
+                    <span>DATABASE CLOUD SYNCED</span>
+                    <strong className="text-emerald-450 text-emerald-400 text-xs font-black">4 / 4 HEALTHY</strong>
                   </div>
-                  <div className="w-full h-1.5 bg-slate-950/60 rounded-full overflow-hidden">
+                  <div className="w-full h-1 bg-slate-950/65 rounded-full overflow-hidden">
                     <div className="h-full bg-emerald-400 rounded-full w-full" />
                   </div>
                 </div>
-
-                {/* India Regional Nodes ping */}
-                <div className="grid grid-cols-2 gap-2 pt-2 text-center text-xs font-mono">
-                  <div className="bg-[#0b0e1a]/80 border border-white/10 p-2 rounded-lg">
-                    <span className="text-[9px] text-slate-400 uppercase tracking-widest block">SECTOR PING</span>
-                    <span className="text-slate-100 font-bold block mt-0.5">8ms</span>
-                  </div>
-                  <div className="bg-[#0b0e1a]/80 border border-white/10 p-2 rounded-lg">
-                    <span className="text-[9px] text-slate-400 uppercase tracking-widest block">PACKET LOSS</span>
-                    <span className="text-emerald-400 font-bold block mt-0.5">0.00%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Holographic Diagnostic Stream Logs */}
-            <div className="rounded-2xl border border-white/20 bg-[#12090a]/90 p-5 shadow-[0_8px_25px_rgba(0,0,0,0.15)] relative overflow-hidden hover:border-white/40 transition-colors duration-300">
-              <h4 className="font-display font-black text-xs uppercase tracking-widest text-slate-200 mb-3 pb-2 border-b border-white/10 flex items-center justify-between">
-                <span className="old-age-title text-xs">TERMINAL SYSTEMS FEED</span>
-                <Activity className="w-4 h-4 text-red-500 animate-pulse" />
-              </h4>
-
-              <div className="bg-[#0c0505] border border-white/10 p-4 rounded-xl font-mono text-[10px] space-y-2 h-[150px] overflow-y-auto shadow-inner">
-                {activeTerminalLogs.length === 0 ? (
-                  <div className="text-slate-500 italic">No system signal logs recorded yet...</div>
-                ) : (
-                  activeTerminalLogs.map((log, lIdx) => (
-                    <div key={lIdx} className="text-slate-300 border-l-2 border-red-500/40 pl-2 leading-normal">
-                      <span className="text-red-700/60 mr-1">[{new Date().toLocaleTimeString().substring(0, 8)}]</span>
-                      {log}
-                    </div>
-                  ))
-                )}
-              </div>
-              <div className="mt-3 flex justify-between items-center text-[9px] font-mono text-slate-400 px-1 font-bold">
-                <span>FEED: CH_1 // SECURE</span>
-                <span className="text-slate-500 animate-pulse">● RECORDING_STREAM</span>
               </div>
             </div>
 
@@ -652,11 +526,11 @@ export default function App() {
         <AnimatePresence>
           {activeGameId === 'chess' && (
             <motion.div 
-              initial={{ scale: 0.9, opacity: 0, y: 10 }}
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 10 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
               id="chess-easter-egg-alert"
-              className="rounded-2xl border border-emerald-500/25 bg-emerald-950/40 backdrop-blur-xl p-5 mb-8 flex items-start gap-4 shadow-[0_4px_20px_rgba(16,185,129,0.15)] relative overflow-hidden"
+              className="rounded-2xl border border-emerald-500/25 bg-emerald-950/30 backdrop-blur-xl p-5 mb-8 flex items-start gap-4 shadow-[0_4px_20px_rgba(16,185,129,0.15)] relative overflow-hidden"
             >
               <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-emerald-500/10 rounded-full blur-[40px] pointer-events-none" />
               <ShieldAlert className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5 animate-bounce" />
@@ -664,7 +538,7 @@ export default function App() {
                 <strong className="text-white text-sm block mb-1 font-bold">COGNITIVE GRANDMASTER REPORT:</strong>
                 User profile <strong className="text-white font-bold">Renga</strong> rating verified at <strong className="text-emerald-400 font-bold">200 ELO</strong>. 
                 Diagnostic analysis indicates highly complex early Queen maneuvers that completely disregard standard chess openings. 
-                Use caution during checkmate coordinates mapping.
+                Use caution during checkmate mappings.
               </div>
             </motion.div>
           )}
@@ -675,15 +549,14 @@ export default function App() {
           <svg className="fixed inset-0 w-full h-full pointer-events-none z-50">
             <defs>
               <linearGradient id="flame-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#fef08a" /> {/* Pure hot yellow */}
-                <stop offset="45%" stopColor="#f97316" /> {/* Molten Orange */}
-                <stop offset="100%" stopColor="#dc2626" /> {/* Scorched Red */}
+                <stop offset="0%" stopColor="#fef08a" />
+                <stop offset="45%" stopColor="#f97316" />
+                <stop offset="100%" stopColor="#dc2626" />
               </linearGradient>
             </defs>
             {laserBeams.map(laser => {
-              // Create wavy coordinate shifts for an organic breathing fire effect
-              const midX = (laser.x1 + laser.x2) / 2 + Math.sin(laser.id * 12) * 18;
-              const midY = (laser.y1 + laser.y2) / 2 + Math.cos(laser.id * 12) * 18;
+              const midX = (laser.x1 + laser.x2) / 2 + Math.sin(laser.id * 12) * 15;
+              const midY = (laser.y1 + laser.y2) / 2 + Math.cos(laser.id * 12) * 15;
 
               return (
                 <g key={laser.id}>
@@ -692,7 +565,7 @@ export default function App() {
                     d={`M ${laser.x1} ${laser.y1} Q ${midX} ${midY} ${laser.x2} ${laser.y2}`}
                     fill="none"
                     stroke="#dc2626" 
-                    strokeWidth="28" 
+                    strokeWidth="20" 
                     strokeLinecap="round" 
                     opacity="0.32"
                     className="blur-md"
@@ -702,7 +575,7 @@ export default function App() {
                     d={`M ${laser.x1} ${laser.y1} Q ${midX} ${midY} ${laser.x2} ${laser.y2}`}
                     fill="none"
                     stroke="#ea580c" 
-                    strokeWidth="14" 
+                    strokeWidth="10" 
                     strokeLinecap="round" 
                     opacity="0.8"
                     className="blur-sm"
@@ -712,31 +585,21 @@ export default function App() {
                     d={`M ${laser.x1} ${laser.y1} Q ${midX} ${midY} ${laser.x2} ${laser.y2}`}
                     fill="none"
                     stroke="url(#flame-grad)" 
-                    strokeWidth="6" 
+                    strokeWidth="5" 
                     strokeLinecap="round" 
                     opacity="0.95"
                   />
-                  {/* Blending core intensity beam */}
-                  <path 
-                    d={`M ${laser.x1} ${laser.y1} Q ${midX} ${midY} ${laser.x2} ${laser.y2}`}
-                    fill="none"
-                    stroke="#fffbeb" 
-                    strokeWidth="2.2" 
-                    strokeLinecap="round" 
-                  />
 
                   {/* Explosive impact shockwave rings on the target card */}
-                  <circle cx={laser.x2} cy={laser.y2} r="25" fill="none" stroke="#f97316" strokeWidth="2.5" className="animate-ping" opacity="0.5" />
-                  <circle cx={laser.x2} cy={laser.y2} r="12" fill="#ef4444" opacity="0.8" className="animate-pulse" />
-                  <circle cx={laser.x2 + Math.sin(laser.id * 4) * 22} cy={laser.y2 - 12} r="2" fill="#fbbf24" className="animate-bounce" />
-                  <circle cx={laser.x2 - Math.cos(laser.id * 4) * 22} cy={laser.y2 - 25} r="1.5" fill="#f97316" className="animate-ping" />
+                  <circle cx={laser.x2} cy={laser.y2} r="20" fill="none" stroke="#f97316" strokeWidth="2" className="animate-ping" opacity="0.5" />
+                  <circle cx={laser.x2} cy={laser.y2} r="10" fill="#ef4444" opacity="0.8" className="animate-pulse" />
                 </g>
               );
             })}
           </svg>
         )}
 
-        {/* Floating Tactical Evil Clown mascot in viewport flight */}
+        {/* Floating Mascot Companion Drone */}
         <AnimatePresence>
           {robotStatus !== 'idle' && (
             <motion.div
@@ -751,20 +614,20 @@ export default function App() {
                   rotate: 0
                 } : robotStatus === 'flying' ? {
                   x: destPos.x,
-                  y: destPos.y - 80,
-                  scale: 1.35,
+                  y: destPos.y - 85,
+                  scale: 1.3,
                   opacity: 1,
                   rotate: 15
                 } : robotStatus === 'targeting' ? {
                   x: destPos.x,
-                  y: destPos.y - 80,
-                  scale: 1.4,
+                  y: destPos.y - 85,
+                  scale: 1.35,
                   opacity: 1,
                   rotate: 0
                 } : robotStatus === 'firing' ? {
                   x: destPos.x,
-                  y: destPos.y - 80,
-                  scale: 1.45,
+                  y: destPos.y - 85,
+                  scale: 1.4,
                   opacity: 1,
                   rotate: 0
                 } : robotStatus === 'returning' ? {
@@ -779,10 +642,10 @@ export default function App() {
               transition={{
                 type: "spring",
                 stiffness: robotStatus === 'flying' || robotStatus === 'returning' ? 120 : 180,
-                damping: robotStatus === 'flying' || robotStatus === 'returning' ? 14 : 18,
+                damping: robotStatus === 'flying' || robotStatus === 'returning' ? 16 : 18,
                 mass: 0.9
               }}
-              className="fixed w-20 h-20 -ml-10 -mt-10 pointer-events-none z-50 flex items-center justify-center"
+              className="fixed w-20 h-20 -ml-10 -mt-10 pointer-events-none z-50 flex items-center justify-center animate-gpu"
             >
               <div className={`w-[90%] h-[90%] ${
                 robotStatus === 'charging' ? 'animate-shake-tight' :
@@ -791,24 +654,21 @@ export default function App() {
                 <GamerRobot 
                   status={robotStatus} 
                   isHeaderAvatar={false} 
-                  gameColorTheme={activeAttackGameId ? '#f97316' : activeColorTheme.colorCode} 
+                  gameColorTheme={activeAttackGameId ? '#f97316' : activeColorTheme} 
                 />
               </div>
 
-              {/* Holographic HUD reticle projected beneath when locked */}
+              {/* Holographic reticle below mascot */}
               {(robotStatus === 'targeting' || robotStatus === 'firing') && (
                 <div className="absolute top-full mt-3 flex flex-col items-center">
                   <motion.div 
-                    animate={{ scale: [1, 1.25, 1], rotate: -360 }}
-                    transition={{ repeat: Infinity, duration: 2.2, ease: "linear" }}
-                    className="w-11 h-11 rounded-full border border-dashed flex items-center justify-center"
-                    style={{ borderColor: '#ef4444', boxShadow: `0 0 12px rgba(239, 68, 68, 0.25)` }}
+                    animate={{ scale: [1, 1.2, 1], rotate: -360 }}
+                    transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                    className="w-10 h-10 rounded-full border border-dashed flex items-center justify-center"
+                    style={{ borderColor: '#ef4444', boxShadow: `0 0 10px rgba(239, 68, 68, 0.25)` }}
                   >
                     <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
                   </motion.div>
-                  <span className="text-[6.5px] font-mono mt-1 px-1.5 py-0.5 bg-black/90 border border-emerald-500/50 rounded text-emerald-400 select-none whitespace-nowrap tracking-widest font-black">
-                    🤡 CLOWN CARNAGE // LAUNCHING
-                  </span>
                 </div>
               )}
             </motion.div>
@@ -820,9 +680,9 @@ export default function App() {
         )}
 
         {/* Minimalist tactical footer */}
-        <footer id="app-footer" className="mt-20 mb-8 border-t border-slate-800/60 pt-8 text-center select-none">
-          <p className="font-mono text-[10px] text-slate-400 uppercase tracking-[0.35em]">
-            NEO SYSTEM COCKPIT CONFIG PORTFOLIO &copy; {new Date().getFullYear()} — CHANNELS STABLE OVER INTEL GROUND PING
+        <footer id="app-footer" className="mt-20 mb-8 border-t border-slate-850 pt-8 text-center select-none opacity-50">
+          <p className="font-mono text-[9px] text-slate-400 uppercase tracking-[0.3em]">
+            SYSTEM PORTFOLIO &copy; {new Date().getFullYear()} — SECTOR LINK OPERATING OVER SECURE INTEL LINES
           </p>
         </footer>
 

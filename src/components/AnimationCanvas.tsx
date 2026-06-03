@@ -26,6 +26,10 @@ export const AnimationCanvas = forwardRef<AnimationCanvasHandle, AnimationCanvas
     const [killFeeds, setKillFeeds] = useState<{ id: number; text: string; x: number; y: number }[]>([]);
     const [eloDisplay, setEloDisplay] = useState<number>(200);
 
+    // Keep track of active loop cycles on-demand
+    const isLoopRunningRef = useRef(false);
+    const ensureLoopRunningRef = useRef<() => void>(() => {});
+
     // Keep track of particles & animations using refs to avoid React render delays
     const particlesRef = useRef<any[]>([]);
     const assetsRef = useRef<{
@@ -378,6 +382,7 @@ export const AnimationCanvas = forwardRef<AnimationCanvasHandle, AnimationCanvas
           // 6. ELO Rating animation - counts up with each click
           setEloDisplay(prev => prev + Math.floor(2 + Math.random() * 6));
         }
+        ensureLoopRunningRef.current();
       },
       resetAnimations: () => {
         particlesRef.current = [];
@@ -434,6 +439,9 @@ export const AnimationCanvas = forwardRef<AnimationCanvasHandle, AnimationCanvas
       let isIntersecting = true;
       const intersectionObserver = new IntersectionObserver(([entry]) => {
         isIntersecting = entry.isIntersecting;
+        if (isIntersecting) {
+          ensureLoopRunningRef.current();
+        }
       }, { threshold: 0.01 });
       intersectionObserver.observe(canvas);
 
@@ -681,6 +689,11 @@ export const AnimationCanvas = forwardRef<AnimationCanvasHandle, AnimationCanvas
 
       // Continuous animation execution cycle
       const updateFrame = () => {
+        if (!canvasRef.current) {
+          isLoopRunningRef.current = false;
+          return;
+        }
+
         // 1. Off-screen check
         if (!isIntersecting) {
           animationId = requestAnimationFrame(updateFrame);
@@ -692,7 +705,7 @@ export const AnimationCanvas = forwardRef<AnimationCanvasHandle, AnimationCanvas
         const printing = hasActiveAnimations();
         if (!active && !printing) {
           ctx.clearRect(0, 0, width, height);
-          animationId = requestAnimationFrame(updateFrame);
+          isLoopRunningRef.current = false;
           return;
         }
 
@@ -1282,12 +1295,21 @@ export const AnimationCanvas = forwardRef<AnimationCanvasHandle, AnimationCanvas
         animationId = requestAnimationFrame(updateFrame);
       };
 
+      ensureLoopRunningRef.current = () => {
+        if (!isLoopRunningRef.current) {
+          isLoopRunningRef.current = true;
+          updateFrame();
+        }
+      };
+
+      isLoopRunningRef.current = true;
       updateFrame();
 
       return () => {
         cancelAnimationFrame(animationId);
         resizeObserver.disconnect();
         intersectionObserver.disconnect();
+        isLoopRunningRef.current = false;
       };
     }, [gameId, isActive]);
 

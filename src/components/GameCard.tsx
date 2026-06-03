@@ -6,24 +6,42 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { GameData } from '../types';
 import { AnimationCanvas, AnimationCanvasHandle } from './AnimationCanvas';
-import { ArrowDownRight, Award, Flame, Swords, Shield, Target, Zap, CircleDot, RefreshCw } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { Award, CircleDot } from 'lucide-react';
+import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'motion/react';
 import { playSound } from '../audio';
 import GameIcon from './GameIcon';
 
 interface GameCardProps {
-  key?: any;
   game: GameData;
   isActive: boolean;
-  onSelect: () => void;
+  onSelect?: () => void;
 }
 
 export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
   const canvasRef = useRef<AnimationCanvasHandle>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isSwiping, setIsSwiping] = useState(false);
-  const [clickCount, setClickCount] = useState(0);
   const [isShaking, setIsShaking] = useState(false);
+
+  // Viewport scroll relative offset tracking
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
+
+  // Mapped physical parameters
+  const rawScale = useTransform(scrollYProgress, [0, 0.45, 0.55, 1], [0.93, 1.0, 1.0, 0.93]);
+  const rawOpacity = useTransform(scrollYProgress, [0, 0.25, 0.75, 1], [0.55, 1.0, 1.0, 0.55]);
+  const rawRotateX = useTransform(scrollYProgress, [0, 0.5, 1], [6, 0, -6]);
+  const rawTranslateY = useTransform(scrollYProgress, [0, 0.5, 1], [30, 0, -30]);
+
+  // Spring interpolations for continuous, fluid inertial kinetic motion
+  const springConfig = { stiffness: 85, damping: 20, mass: 0.75 };
+  const scale = useSpring(rawScale, springConfig);
+  const opacity = useSpring(rawOpacity, springConfig);
+  const rotateX = useSpring(rawRotateX, springConfig);
+  const translateY = useSpring(rawTranslateY, springConfig);
 
   // Custom Event listener for robot laser attacks
   useEffect(() => {
@@ -60,21 +78,7 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
   }, [isActive]);
 
   const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    setClickCount(prev => prev + 1);
-    
-    // Play the stylized synthesized real-time sound of the chosen game
     playSound(game.id as any);
-
-    if (!isActive) {
-      onSelect();
-      setTimeout(() => {
-        if (canvasRef.current && cardRef.current) {
-          const rect = cardRef.current.getBoundingClientRect();
-          canvasRef.current.triggerTap(rect.width / 2, rect.height / 3);
-        }
-      }, 100);
-      return;
-    }
 
     if (canvasRef.current && cardRef.current) {
       const rect = cardRef.current.getBoundingClientRect();
@@ -86,7 +90,7 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
 
   const colorConfig = {
     'coc': {
-      borderActive: 'border-white bg-gradient-to-br from-[#1b080a] via-[#080505] to-[#150f10] shadow-[0_0_25px_rgba(255,255,255,0.2)]',
+      borderActive: 'border-red-500/80 bg-gradient-to-br from-[#1b080a] via-[#080505] to-[#150f10] shadow-[0_0_25px_rgba(239,68,68,0.15)]',
       borderInactive: 'border-white/10 bg-[#0c0506]/95 hover:bg-[#140809] hover:border-white/30 shadow-sm',
       badgeBg: 'bg-red-500/20 text-red-300 border-red-500/30',
       textAccent: 'text-red-400',
@@ -96,17 +100,17 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
       iconBg: 'bg-red-950/40 text-red-400 border-red-500/35'
     },
     'bgmi': {
-      borderActive: 'border-white bg-gradient-to-br from-[#22070e] via-[#080505] to-[#150f10] shadow-[0_0_25px_rgba(255,255,255,0.2)]',
+      borderActive: 'border-rose-500/80 bg-gradient-to-br from-[#22070e] via-[#080505] to-[#150f10] shadow-[0_0_25px_rgba(244,63,94,0.15)]',
       borderInactive: 'border-white/10 bg-[#0c0506]/95 hover:bg-[#140809] hover:border-white/30 shadow-sm',
       badgeBg: 'bg-red-700/20 text-red-300 border-red-700/30',
-      textAccent: 'text-red-400',
-      themeGlow: 'bg-red-600',
-      bgGradient: 'from-red-600/10 via-red-950/5 to-transparent',
+      textAccent: 'text-rose-400',
+      themeGlow: 'bg-red-650',
+      bgGradient: 'from-red-650/10 via-rose-950/5 to-transparent',
       accentGlowColor: 'rgba(190, 18, 60, 0.6)',
-      iconBg: 'bg-[#220a0e] text-red-400 border-red-600/35'
+      iconBg: 'bg-[#220a0e] text-red-400 border-red-650/35'
     },
     'pogo': {
-      borderActive: 'border-white bg-gradient-to-br from-[#240c06] via-[#080505] to-[#150f10] shadow-[0_0_25px_rgba(255,255,255,0.2)]',
+      borderActive: 'border-amber-500/80 bg-gradient-to-br from-[#240c06] via-[#080505] to-[#150f10] shadow-[0_0_25px_rgba(245,158,11,0.15)]',
       borderInactive: 'border-white/10 bg-[#0c0506]/95 hover:bg-[#140809] hover:border-white/30 shadow-sm',
       badgeBg: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
       textAccent: 'text-amber-400',
@@ -116,38 +120,42 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
       iconBg: 'bg-[#240e08] text-amber-400 border-amber-600/35'
     },
     'chess': {
-      borderActive: 'border-white bg-gradient-to-br from-[#250406] via-[#080505] to-[#150f10] shadow-[0_0_25px_rgba(255,255,255,0.2)]',
+      borderActive: 'border-emerald-500/80 bg-gradient-to-br from-[#122515] via-[#080505] to-[#150f10] shadow-[0_0_25px_rgba(16,185,129,0.15)]',
       borderInactive: 'border-white/10 bg-[#0c0506]/95 hover:bg-[#140809] hover:border-white/30 shadow-sm',
-      badgeBg: 'bg-red-800/20 text-red-400 border-red-800/30',
-      textAccent: 'text-red-400',
-      themeGlow: 'bg-red-700',
-      bgGradient: 'from-red-700/10 via-red-950/5 to-transparent',
-      accentGlowColor: 'rgba(153, 27, 27, 0.6)',
-      iconBg: 'bg-[#280a0e] text-red-400 border-red-800/35'
+      badgeBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+      textAccent: 'text-emerald-400',
+      themeGlow: 'bg-emerald-550 bg-emerald-500',
+      bgGradient: 'from-emerald-700/10 via-emerald-950/5 to-transparent',
+      accentGlowColor: 'rgba(16, 185, 129, 0.6)',
+      iconBg: 'bg-[#0f2812] text-emerald-400 border-emerald-800/35'
     }
   }[game.id];
 
   return (
-    <motion.div
-      id={`game-card-${game.id}`}
-      ref={cardRef}
-      onClick={handleCardClick}
-      layout
-      whileHover={isActive ? {} : { y: -4, scale: 1.015 }}
-      transition={{ 
-        layout: { type: "spring", stiffness: 180, damping: 25, mass: 0.8 },
-        default: { type: "spring", stiffness: 150, damping: 22 }
-      }}
-      className={`relative overflow-hidden rounded-2xl border transition-[border-color,background-color,box-shadow] duration-500 group cursor-pointer select-none gpu-accelerated transform-gpu ${
-        isActive ? colorConfig.borderActive : colorConfig.borderInactive
-      } ${isShaking ? 'animate-card-shake' : ''}`}
-    >
-      {/* Interactive Canvas - Handles tap vectors */}
-      <AnimationCanvas 
-        ref={canvasRef} 
-        gameId={game.id} 
-        isActive={isActive} 
-      />
+    <div ref={containerRef} className="w-full relative py-2" style={{ perspective: "1000px" }}>
+      <motion.div
+        id={`game-card-${game.id}`}
+        ref={cardRef}
+        onClick={handleCardClick}
+        style={{
+          scale,
+          opacity,
+          rotateX,
+          translateY,
+          transformStyle: "preserve-3d"
+        }}
+        className={`relative overflow-hidden rounded-2xl border transition-all duration-300 select-none cursor-pointer ${
+          isActive ? colorConfig.borderActive : colorConfig.borderInactive
+        } ${isShaking ? 'animate-card-shake shadow-[0_0_40px_rgba(239,68,68,0.3)]' : ''}`}
+      >
+      {/* Interactive Play Canvas */}
+      {isActive && (
+        <AnimationCanvas 
+          ref={canvasRef} 
+          gameId={game.id} 
+          isActive={isActive} 
+        />
+      )}
 
       {/* Cyber Aesthetic Scanline Grid */}
       <div className="absolute inset-0 scanlines opacity-[0.03] pointer-events-none z-0" />
@@ -164,7 +172,7 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
         >
           {/* Overlay to preserve readable, immersive dark cyberpunk analytics theme */}
           <div 
-            className="absolute inset-0 transition-all duration-500 bg-zinc-950/88 group-hover:bg-zinc-950/80" 
+            className="absolute inset-0 transition-all duration-500 bg-zinc-950/90" 
           />
         </div>
       )}
@@ -183,65 +191,54 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
         />
       )}
 
-
-
-      <div className="p-4 sm:p-6 md:p-8 relative z-10">
+      <div className="p-5 sm:p-7 md:p-8 relative z-10">
         
         {/* Upper Title Block */}
-        <motion.div layout className={`flex flex-col ${isActive ? 'items-center text-center w-full' : 'sm:flex-row sm:items-center justify-between'} gap-4`}>
-          <motion.div layout className={`flex ${isActive ? 'flex-col items-center w-full' : 'flex-row items-center'} gap-4`}>
-            <motion.div 
-              layoutId={`game-icon-container-${game.id}`}
-              layout
-              transition={{ type: "spring", stiffness: 45, damping: 15, mass: 1.2 }}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-row items-center gap-4">
+            <div 
               id={`game-icon-${game.id}`} 
-              className={`rounded-2xl border flex items-center justify-center overflow-hidden shrink-0 shadow-xl transform-gpu will-change-transform ${
-                isActive ? 'w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 scale-105 border-white/60 shadow-[0_0_30px_rgba(255,255,255,0.15)]' : 'w-14 h-14'
-              } ${colorConfig.iconBg}`}
+              className={`rounded-2xl border flex items-center justify-center overflow-hidden shrink-0 shadow-xl transition-all duration-300 w-16 h-16 sm:w-20 sm:h-20 ${colorConfig.iconBg}`}
             >
-              <motion.div layout className="w-[85%] h-[85%] flex items-center justify-center transform-gpu will-change-transform">
+              <div className="w-[85%] h-[85%] flex items-center justify-center">
                 <GameIcon gameId={game.id} className="w-full h-full" />
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
             
-            <motion.div layout className={`flex flex-col ${isActive ? 'items-center' : 'items-start'} transition-all duration-[1200ms]`}>
+            <div className="flex flex-col items-start">
               <div className="flex items-center gap-2">
-                <motion.h3 layout id={`game-title-${game.id}`} className="text-xl md:text-2xl old-age-title transition group-hover:text-red-400 duration-300">
+                <h3 id={`game-title-${game.id}`} className="text-xl md:text-2xl old-age-title text-white">
                   {game.title}
-                </motion.h3>
+                </h3>
                 {isActive && (
-                  <span className={`w-1.5 h-1.5 rounded-full ${colorConfig.themeGlow} animate-ping`} />
+                  <span className={`w-1.5 h-1.5 rounded-full ${colorConfig.themeGlow} animate-pulse`} />
                 )}
               </div>
-              <motion.p layout id={`game-tagline-${game.id}`} className="text-[10px] font-mono text-slate-400 uppercase tracking-widest mt-1">
+              <p id={`game-tagline-${game.id}`} className="text-[9px] font-mono text-slate-400 uppercase tracking-widest mt-1">
                 {game.tagline}
-              </motion.p>
-            </motion.div>
-          </motion.div>
+              </p>
+            </div>
+          </div>
           
-          <motion.span layout className={`font-mono text-xs font-bold px-3 py-1.5 rounded-md border tracking-widest uppercase shrink-0 text-center shadow-sm ${colorConfig.badgeBg} ${isActive ? 'mt-2' : ''}`}>
+          <span className={`font-mono text-xs font-bold px-3 py-1.5 rounded-md border tracking-widest uppercase shrink-0 text-center shadow-sm ${colorConfig.badgeBg}`}>
             {game.badge}
-          </motion.span>
-        </motion.div>
+          </span>
+        </div>
 
         {/* Dynamic Horizontal Level Indicator */}
-        <motion.div layout className="mt-6 w-full bg-[#05060d] border border-zinc-800 h-[5px] rounded-full overflow-hidden relative">
-          <motion.div 
-            layout
+        <div className="mt-5 w-full bg-[#05060d] border border-zinc-900 h-[5px] rounded-full overflow-hidden relative">
+          <div 
             className={`h-full rounded-full transition-all duration-[1500ms] ${colorConfig.themeGlow}`}
-            style={{ width: isActive ? '100%' : '25%' }}
+            style={{ width: '100%' }}
           />
-        </motion.div>
+        </div>
 
         {/* Major Stat Widgets Row */}
-        <motion.div layout className="grid grid-cols-3 gap-2 sm:gap-3.5 mt-5">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3.5 mt-5">
           {game.mainStats.map((stat, idx) => (
-            <motion.div 
-              layout
+            <div 
               key={idx} 
-              className={`border p-2 sm:p-3 rounded-lg sm:rounded-xl text-center backdrop-blur-md transition-all duration-300 ${
-                isActive ? 'bg-[#121426]/90 border-zinc-700/60 shadow-md' : 'bg-[#090b14]/75 border-zinc-800/80 group-hover:border-zinc-700'
-              }`}
+              className="border p-2 sm:p-3 rounded-xl text-center bg-[#121426]/95 border-zinc-850 shadow-md"
             >
               <div className="text-[9px] md:text-[10px] font-mono text-slate-400 uppercase tracking-widest font-bold">
                 {stat.label}
@@ -249,63 +246,50 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
               <div className={`text-xs md:text-sm font-black font-mono mt-1 ${stat.highlight ? colorConfig.textAccent : 'text-slate-200'}`}>
                 {stat.value}
               </div>
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
+        </div>
 
-        {/* Dynamic expanding segment built on framer-motion AnimatePresence */}
-        <AnimatePresence initial={false}>
-          {isActive && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 180, damping: 25, mass: 0.8 }}
-              className="overflow-hidden"
-            >
-              <div className="mt-8 pt-6 border-t border-zinc-800/80">
-                {/* Tactical Description block */}
-                <p className="text-xs md:text-sm text-slate-300 leading-relaxed font-sans mb-6 bg-[#090a14]/90 p-4 rounded-xl border border-zinc-800/60 shadow-inner">
-                  {game.about}
-                </p>
+        {/* Dynamic expanded info */}
+        <div className="mt-6 pt-5 border-t border-zinc-800/60">
+          <p className="text-xs md:text-sm text-slate-300 leading-relaxed font-sans mb-5 bg-[#090a14]/90 p-4 rounded-xl border border-zinc-900 shadow-inner">
+            {game.about}
+          </p>
 
-                {/* Highly structured Sub Diagnostics list */}
-                <div className="mb-6">
-                  <h4 className="text-[10px] font-mono font-black uppercase tracking-widest text-slate-450 text-slate-450 mb-3 flex items-center gap-2">
-                    <Award className="w-3.5 h-3.5 text-cyan-400" />
-                    COGNITIVE TELEMETRY DIAGNOSTICS
-                  </h4>
+          <div className="mb-5">
+            <h4 className="text-[10px] font-mono font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-2">
+              <Award className="w-3.5 h-3.5 text-cyan-400" />
+              COGNITIVE DIAGNOSTIC DATA
+            </h4>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {game.subStats.map((sub, sIdx) => (
-                      <div 
-                        key={sIdx} 
-                        className="flex justify-between items-center bg-[#090b14]/90 border border-zinc-800/80 p-2.5 px-3 rounded-lg text-xs font-mono transition hover:bg-[#111425] text-slate-200 shadow-sm"
-                      >
-                        <span className="text-slate-450 text-slate-400 uppercase tracking-wider">{sub.label}</span>
-                        <span className={`font-black ${colorConfig.textAccent}`}>{sub.value}</span>
-                      </div>
-                    ))}
-                  </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {game.subStats.map((sub, sIdx) => (
+                <div 
+                  key={sIdx} 
+                  className="flex justify-between items-center bg-[#090b14]/90 border border-zinc-900 p-2.5 px-3 rounded-lg text-xs font-mono text-slate-200 shadow-sm"
+                >
+                  <span className="text-slate-400 uppercase tracking-wider">{sub.label}</span>
+                  <span className={`font-black ${colorConfig.textAccent}`}>{sub.value}</span>
                 </div>
+              ))}
+            </div>
+          </div>
 
-                {/* Combat triggers indicators */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#080a13]/80 border border-zinc-800/90 p-3 rounded-xl">
-                  <div className="flex items-center gap-2.5 text-[10px] font-mono text-slate-400">
-                    <CircleDot className={`w-3 h-3 ${colorConfig.textAccent} animate-ping`} />
-                    <span>TAP ANYWHERE ON THE CARD TO FIRE PARTICLE EXPLOSIONS</span>
-                  </div>
-                  
-                  <div className="text-[9px] font-mono text-cyan-400 bg-cyan-950/40 px-2 py-1 rounded border border-cyan-800/50 self-start uppercase tracking-wider font-bold">
-                    TAP REACTION // ACTIVE
-                  </div>
-                </div>
+          {/* Combat triggers indicators */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#080a13]/85 border border-zinc-900 p-3 rounded-xl">
+            <div className="flex items-center gap-2.5 text-[9.5px] font-mono text-slate-400">
+              <CircleDot className={`w-2.5 h-2.5 ${colorConfig.textAccent} animate-pulse`} />
+              <span>TAP COCKPIT MONITOR CANVAS FOR DYNAMIC PARTICLE SPARKS</span>
+            </div>
+            
+            <div className="text-[8px] font-mono text-cyan-450 text-cyan-400 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-900/50 self-start uppercase tracking-wider font-extrabold">
+              TAP SENSORS ON
+            </div>
+          </div>
+        </div>
 
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 }
