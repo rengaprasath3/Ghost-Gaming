@@ -135,8 +135,8 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
       layout
       whileHover={isActive ? {} : { y: -4, scale: 1.015 }}
       transition={{ 
-        layout: { type: "spring", stiffness: 45, damping: 15, mass: 1.2 },
-        default: { type: "spring", stiffness: 120, damping: 20 }
+        layout: { type: "spring", stiffness: 180, damping: 25, mass: 0.8 },
+        default: { type: "spring", stiffness: 150, damping: 22 }
       }}
       className={`relative overflow-hidden rounded-2xl border transition-[border-color,background-color,box-shadow] duration-500 group cursor-pointer select-none gpu-accelerated transform-gpu ${
         isActive ? colorConfig.borderActive : colorConfig.borderInactive
@@ -260,7 +260,7 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 40, damping: 15, mass: 1.2 }}
+              transition={{ type: "spring", stiffness: 180, damping: 25, mass: 0.8 }}
               className="overflow-hidden"
             >
               <div className="mt-8 pt-6 border-t border-zinc-800/80">

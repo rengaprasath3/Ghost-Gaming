@@ -56,10 +56,10 @@ export default function App() {
     let vy = 0;
     let lastFrameTime = performance.now();
 
-    // Slower, weighted kinetic parameters for velvety smooth slow-scroll inertia and gradual settle
-    const stiffness = 10;  // Extremely low stiffness for premium slowed-down movement
-    const damping = 7;     // Fine-tuned slow friction ratio to prevent micro-jitter or bounce
-    const mass = 2.4;      // High mass increases kinetic momentum, creating an organic, luxurious glide
+    // Velvety smooth, highly responsive iOS-level kinetic parameters with rapid settle time
+    const stiffness = 160; // High premium tension for responsive, responsive tracking
+    const damping = 22;    // Superb damping ratio to quickly arrest momentum and avoid micro-jitter
+    const mass = 0.85;     // Snappy, lightweight kinetic mass for natural immediate gliding
 
     const animateScrollStep = (currentTime: number) => {
       let dt = (currentTime - lastFrameTime) / 1000;
@@ -87,8 +87,8 @@ export default function App() {
 
       const diff = targetY - y;
 
-      // Settle thresholds for smooth, noise-free arrest
-      if (Math.abs(diff) < 0.25 && Math.abs(vy) < 0.25) {
+      // Settle thresholds for smooth, instantaneous noise-free arrest
+      if (Math.abs(diff) < 0.5 && Math.abs(vy) < 0.5) {
         window.scrollTo(0, targetY);
         scrollAnimationRef.current = null;
         if (onComplete) onComplete();
