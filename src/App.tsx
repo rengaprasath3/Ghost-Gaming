@@ -61,6 +61,24 @@ export default function App() {
     const damping = 22;    // Superb damping ratio to quickly arrest momentum and avoid micro-jitter
     const mass = 0.85;     // Snappy, lightweight kinetic mass for natural immediate gliding
 
+    let targetY = y;
+    let frameCounter = 0;
+
+    const updateTargetY = () => {
+      const rect = element.getBoundingClientRect();
+      const elementDocTop = rect.top + window.scrollY;
+      const viewportHeight = window.innerHeight;
+      const width = window.innerWidth;
+      const topOffset = width >= 1024 ? 90 : (width >= 768 ? 64 : 32);
+      targetY = Math.max(0, Math.min(
+        elementDocTop - topOffset,
+        document.documentElement.scrollHeight - viewportHeight
+      ));
+    };
+
+    // Run first calculation immediately
+    updateTargetY();
+
     const animateScrollStep = (currentTime: number) => {
       let dt = (currentTime - lastFrameTime) / 1000;
       // Safeguard against layout freezing or background tab context pausing
@@ -69,21 +87,11 @@ export default function App() {
       if (dt <= 0) dt = 0.008;
       lastFrameTime = currentTime;
 
-      const rect = element.getBoundingClientRect();
-      const elementDocTop = rect.top + window.scrollY;
-      const viewportHeight = window.innerHeight;
-      
-      // Calculate real-time top target rather than center point.
-      // By using a responsive distance from the card's top rather than centering,
-      // we keep the top of the card anchored in place on screen. This ensures the 
-      // card's extra detail segments naturally fold strictly DOWNWARD in screen space!
-      // Using a larger offset on PC (90px) for beautiful spacing and smaller (32px) on mobile.
-      const width = window.innerWidth;
-      const topOffset = width >= 1024 ? 90 : (width >= 768 ? 64 : 32);
-      const targetY = Math.max(0, Math.min(
-        elementDocTop - topOffset,
-        document.documentElement.scrollHeight - viewportHeight
-      ));
+      // Query bounding rect once every 6 frames (rather than on every single frame) to completely avoid forced synchronous layouts and lag
+      frameCounter++;
+      if (frameCounter % 6 === 0) {
+        updateTargetY();
+      }
 
       const diff = targetY - y;
 
@@ -120,52 +128,60 @@ export default function App() {
   }, [activeGameId]);
 
   useEffect(() => {
-    let ticking = false;
+    let lastChecked = 0;
+    let throttleTimeout: NodeJS.Timeout | null = null;
 
-    const handleScroll = () => {
-      if (ticking) return;
-      
-      window.requestAnimationFrame(() => {
-        ticking = false;
-        
-        // Prevent layout transitions (from card clicks) from overriding explicitly selected nodes
-        if (isScrollingLockedRef.current) return;
+    const performScrollCheck = () => {
+      if (isScrollingLockedRef.current) return;
 
-        const gameIds: GameID[] = ['coc', 'bgmi', 'pogo', 'chess'];
-        const viewportCenterY = window.innerHeight / 2;
+      const gameIds: GameID[] = ['coc', 'bgmi', 'pogo', 'chess'];
+      const viewportCenterY = window.innerHeight / 2;
 
-        let closestGameId: GameID | null = null;
-        let minDistance = Infinity;
+      let closestGameId: GameID | null = null;
+      let minDistance = Infinity;
 
-        gameIds.forEach(id => {
-          const el = document.getElementById(`game-card-${id}`);
-          if (el) {
-            const rect = el.getBoundingClientRect();
-            // Calculate center point of the card relative to viewport bounds
-            const cardCenterY = rect.top + rect.height / 2;
-            const distance = Math.abs(cardCenterY - viewportCenterY);
-            if (distance < minDistance) {
-              minDistance = distance;
-              closestGameId = id;
-            }
+      gameIds.forEach(id => {
+        const el = document.getElementById(`game-card-${id}`);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          // Calculate center point of the card relative to viewport bounds
+          const cardCenterY = rect.top + rect.height / 2;
+          const distance = Math.abs(cardCenterY - viewportCenterY);
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestGameId = id;
           }
-        });
-
-        if (closestGameId && closestGameId !== activeGameIdRef.current) {
-          setActiveGameId(closestGameId);
-          setActiveTerminalLogs(prev => [
-            `SCROLL_AUTO: Auto-opened cockpit focus on [${closestGameId!.toUpperCase()}] database.`,
-            ...prev
-          ]);
         }
       });
-      
-      ticking = true;
+
+      if (closestGameId && closestGameId !== activeGameIdRef.current) {
+        setActiveGameId(closestGameId);
+        setActiveTerminalLogs(prev => [
+          `SCROLL_AUTO: Auto-opened cockpit focus on [${closestGameId!.toUpperCase()}] database.`,
+          ...prev.slice(0, 15) // Keep size small to prevent state bloat lag
+        ]);
+      }
+    };
+
+    const handleScroll = () => {
+      const now = Date.now();
+      // Throttle viewport checks to once every 150ms to ensure 120 FPS scrolling speeds
+      if (now - lastChecked > 150) {
+        performScrollCheck();
+        lastChecked = now;
+      }
+
+      // Debounce fallback to ensure we catch the final scroll resting state
+      if (throttleTimeout) clearTimeout(throttleTimeout);
+      throttleTimeout = setTimeout(() => {
+        performScrollCheck();
+      }, 150);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      if (throttleTimeout) clearTimeout(throttleTimeout);
     };
   }, []);
 
@@ -539,7 +555,7 @@ export default function App() {
                     // Append diagnostic log of active node shift
                     setActiveTerminalLogs(prev => [
                       `SIGNAL: Connected to ${game.title} database dynamically.`,
-                      ...prev
+                      ...prev.slice(0, 15)
                     ]);
 
                     // Smoothly scroll target element to viewport center via 120 FPS inertial engine

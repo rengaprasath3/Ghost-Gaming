@@ -431,6 +431,30 @@ export const AnimationCanvas = forwardRef<AnimationCanvasHandle, AnimationCanvas
       }
       handleResize();
 
+      let isIntersecting = true;
+      const intersectionObserver = new IntersectionObserver(([entry]) => {
+        isIntersecting = entry.isIntersecting;
+      }, { threshold: 0.01 });
+      intersectionObserver.observe(canvas);
+
+      const hasActiveAnimations = () => {
+        const assets = assetsRef.current;
+        if (particlesRef.current.length > 0) return true;
+        if (gameId === 'coc') {
+          if (assets.cocAxe && assets.cocAxe.active) return true;
+          if (assets.cocShieldScale > 0.01) return true;
+        } else if (gameId === 'bgmi') {
+          if (assets.bgmiCrosshair && assets.bgmiCrosshair.active) return true;
+          if (assets.bgmiAirdrop && assets.bgmiAirdrop.active) return true;
+        } else if (gameId === 'pogo') {
+          if (assets.pogoPokeball && assets.pogoPokeball.active) return true;
+        } else if (gameId === 'chess') {
+          if (assets.chessKnight && assets.chessKnight.active) return true;
+          if (assets.chessCapturedPieces && assets.chessCapturedPieces.length > 0) return true;
+        }
+        return false;
+      };
+
       // Simple drawing routines for modular features
       const drawShield = (cx: number, cy: number, scale: number, rotation: number) => {
         ctx.save();
@@ -657,6 +681,21 @@ export const AnimationCanvas = forwardRef<AnimationCanvasHandle, AnimationCanvas
 
       // Continuous animation execution cycle
       const updateFrame = () => {
+        // 1. Off-screen check
+        if (!isIntersecting) {
+          animationId = requestAnimationFrame(updateFrame);
+          return;
+        }
+
+        // 2. Idle state optimization: if card is resting/inactive and has no active animations or clicks running, do not redraw.
+        const active = isActive;
+        const printing = hasActiveAnimations();
+        if (!active && !printing) {
+          ctx.clearRect(0, 0, width, height);
+          animationId = requestAnimationFrame(updateFrame);
+          return;
+        }
+
         ctx.clearRect(0, 0, width, height);
 
         // --- Continuous Ambient background particles ---
@@ -1248,6 +1287,7 @@ export const AnimationCanvas = forwardRef<AnimationCanvasHandle, AnimationCanvas
       return () => {
         cancelAnimationFrame(animationId);
         resizeObserver.disconnect();
+        intersectionObserver.disconnect();
       };
     }, [gameId, isActive]);
 
