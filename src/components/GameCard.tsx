@@ -133,7 +133,7 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
       ref={cardRef}
       onClick={handleCardClick}
       layout
-      whileHover={{ y: -4, scale: 1.015 }}
+      whileHover={isActive ? {} : { y: -4, scale: 1.015 }}
       transition={{ 
         layout: { type: "spring", stiffness: 45, damping: 15, mass: 1.2 },
         default: { type: "spring", stiffness: 120, damping: 20 }
@@ -164,11 +164,7 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
         >
           {/* Overlay to preserve readable, immersive dark cyberpunk analytics theme */}
           <div 
-            className={`absolute inset-0 transition-all duration-500 ${
-              isActive 
-                ? 'bg-zinc-950/75 group-hover:bg-zinc-950/68' 
-                : 'bg-zinc-950/88 group-hover:bg-zinc-950/80'
-            }`} 
+            className="absolute inset-0 transition-all duration-500 bg-zinc-950/88 group-hover:bg-zinc-950/80" 
           />
         </div>
       )}
@@ -178,7 +174,7 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
       {/* Laser Scanning Line Sweeping on Active */}
       {isActive && (
         <div 
-          className={`absolute left-0 w-full h-[1.5px] z-10 pointer-events-none transition-all duration-[2500ms] ease-in-out`}
+          className="absolute left-0 w-full h-[1.5px] z-10 pointer-events-none transition-all duration-[2500ms] ease-in-out"
           style={{
             top: isSwiping ? '98%' : '2%',
             background: `linear-gradient(90deg, transparent 5%, ${colorConfig.accentGlowColor} 50%, transparent 95%)`,
@@ -247,10 +243,10 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
                 isActive ? 'bg-[#121426]/90 border-zinc-700/60 shadow-md' : 'bg-[#090b14]/75 border-zinc-800/80 group-hover:border-zinc-700'
               }`}
             >
-              <div className="text-[9px] md:text-[10px] font-mono text-slate-450 uppercase tracking-widest font-bold text-slate-400">
+              <div className="text-[9px] md:text-[10px] font-mono text-slate-400 uppercase tracking-widest font-bold">
                 {stat.label}
               </div>
-              <div className={`text-xs md:text-sm font-black font-mono mt-1 ${stat.highlight ? colorConfig.textAccent : 'text-slate-250 text-slate-200'}`}>
+              <div className={`text-xs md:text-sm font-black font-mono mt-1 ${stat.highlight ? colorConfig.textAccent : 'text-slate-200'}`}>
                 {stat.value}
               </div>
             </motion.div>

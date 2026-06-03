@@ -57,9 +57,9 @@ export default function App() {
     let lastFrameTime = performance.now();
 
     // Slower, weighted kinetic parameters for velvety smooth slow-scroll inertia and gradual settle
-    const stiffness = 22;  // Low tension to significantly slow down the movement
-    const damping = 11;    // High damping-to-stiffness ratio to prevent bouncing and settle gently
-    const mass = 1.8;      // Higher mass increases kinetic inertia, slowing down acceleration
+    const stiffness = 10;  // Extremely low stiffness for premium slowed-down movement
+    const damping = 7;     // Fine-tuned slow friction ratio to prevent micro-jitter or bounce
+    const mass = 2.4;      // High mass increases kinetic momentum, creating an organic, luxurious glide
 
     const animateScrollStep = (currentTime: number) => {
       let dt = (currentTime - lastFrameTime) / 1000;
@@ -95,13 +95,17 @@ export default function App() {
         return;
       }
 
-      // spring force: F = -k * x - c * v
-      const springForce = diff * stiffness;
-      const dampingForce = vy * damping;
-      const acceleration = (springForce - dampingForce) / mass;
-
-      vy += acceleration * dt;
-      y += vy * dt;
+      // 4x sub-stepping integration loop for absolute mathematical precision and zero-jitter updates
+      const substeps = 4;
+      const subDt = dt / substeps;
+      for (let i = 0; i < substeps; i++) {
+        const currentDiff = targetY - y;
+        const springForce = currentDiff * stiffness;
+        const dampingForce = vy * damping;
+        const acceleration = (springForce - dampingForce) / mass;
+        vy += acceleration * subDt;
+        y += vy * subDt;
+      }
 
       window.scrollTo(0, y);
 
