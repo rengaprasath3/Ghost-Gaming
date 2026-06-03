@@ -73,9 +73,15 @@ export default function App() {
       const elementDocTop = rect.top + window.scrollY;
       const viewportHeight = window.innerHeight;
       
-      // Calculate real-time center to track live Framer Motion/CSS layout expansion transitions
+      // Calculate real-time top target rather than center point.
+      // By using a responsive distance from the card's top rather than centering,
+      // we keep the top of the card anchored in place on screen. This ensures the 
+      // card's extra detail segments naturally fold strictly DOWNWARD in screen space!
+      // Using a larger offset on PC (90px) for beautiful spacing and smaller (32px) on mobile.
+      const width = window.innerWidth;
+      const topOffset = width >= 1024 ? 90 : (width >= 768 ? 64 : 32);
       const targetY = Math.max(0, Math.min(
-        elementDocTop - (viewportHeight / 2) + (rect.height / 2),
+        elementDocTop - topOffset,
         document.documentElement.scrollHeight - viewportHeight
       ));
 
@@ -491,7 +497,7 @@ export default function App() {
         />
 
         {/* Reboot button container ONLY */}
-        <div className="flex justify-end mb-6">
+        <div className="flex justify-center sm:justify-end mb-6">
           <button 
             id="console-hard-reboot"
             onClick={handleResetAll}

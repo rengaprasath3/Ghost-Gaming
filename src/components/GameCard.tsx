@@ -196,7 +196,7 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
               transition={{ type: "spring", stiffness: 45, damping: 15, mass: 1.2 }}
               id={`game-icon-${game.id}`} 
               className={`rounded-2xl border flex items-center justify-center overflow-hidden shrink-0 shadow-xl transform-gpu will-change-transform ${
-                isActive ? 'w-32 h-32 md:w-36 md:h-36 scale-105 border-white/60 shadow-[0_0_30px_rgba(255,255,255,0.15)]' : 'w-14 h-14'
+                isActive ? 'w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 scale-105 border-white/60 shadow-[0_0_30px_rgba(255,255,255,0.15)]' : 'w-14 h-14'
               } ${colorConfig.iconBg}`}
             >
               <motion.div layout className="w-[85%] h-[85%] flex items-center justify-center transform-gpu will-change-transform">
