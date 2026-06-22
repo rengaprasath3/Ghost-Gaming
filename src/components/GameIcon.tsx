@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { useId } from 'react';
 import { GameID } from '../types';
 
 interface GameIconProps {
@@ -11,60 +12,63 @@ interface GameIconProps {
 }
 
 export default function GameIcon({ gameId, className = "w-full h-full" }: GameIconProps) {
+  const baseId = useId().replace(/:/g, '');
+
   if (gameId === 'coc') {
     // Clash of Clans Stylized Barbarian Screaming face icon (high-fidelity vector recreate)
+    const bgId = `coc-bg-${baseId}`;
+    const skinRealId = `coc-skin-real-${baseId}`;
+    const helmetMetalId = `coc-helmet-metal-${baseId}`;
+    const hairId = `coc-hair-${baseId}`;
+    const shadowId = `coc-shadow-${baseId}`;
+
     return (
       <svg viewBox="0 0 100 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <linearGradient id="coc-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id={bgId} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#8d4c1b" />
             <stop offset="50%" stopColor="#51220a" />
             <stop offset="100%" stopColor="#2c1103" />
           </linearGradient>
-          <linearGradient id="coc-skin" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#fbcfe8" />
-            <stop offset="40%" stopColor="#f8a5c2" />
-            <stop offset="100%" stopColor="#e056fd" />
-          </linearGradient>
-          <linearGradient id="coc-skin-real" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id={skinRealId} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#ffeedd" />
             <stop offset="60%" stopColor="#f3a673" />
             <stop offset="100%" stopColor="#cf6a32" />
           </linearGradient>
-          <linearGradient id="coc-hair" x1="0%" y1="0%" x2="0%" y2="100%">
+          <linearGradient id={hairId} x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="#ffeaa7" />
             <stop offset="50%" stopColor="#f1c40f" />
             <stop offset="100%" stopColor="#d63031" />
           </linearGradient>
-          <linearGradient id="coc-helmet-metal" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id={helmetMetalId} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#ffe68a" />
             <stop offset="50%" stopColor="#cca100" />
             <stop offset="100%" stopColor="#7a5c00" />
           </linearGradient>
-          <filter id="coc-shadow" x="-10%" y="-10%" width="120%" height="120%">
+          <filter id={shadowId} x="-10%" y="-10%" width="120%" height="120%">
             <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.5" />
           </filter>
         </defs>
 
         {/* Icon Background */}
-        <rect width="100" height="100" rx="20" fill="url(#coc-bg)" />
+        <rect width="100" height="100" rx="20" fill={`url(#${bgId})`} />
         <rect x="2" y="2" width="96" height="96" rx="18" stroke="#cca100" strokeWidth="2.5" opacity="0.8" />
 
         {/* Angry/Screaming barbarian head container */}
-        <g filter="url(#coc-shadow)">
+        <g filter={`url(#${shadowId})`}>
           {/* Ear left/right */}
           <circle cx="24" cy="58" r="6" fill="#f3a673" stroke="#8d4c1b" strokeWidth="1.5" />
           <circle cx="76" cy="58" r="6" fill="#f3a673" stroke="#8d4c1b" strokeWidth="1.5" />
 
           {/* Skin face block */}
-          <path d="M 28 42 C 28 32 72 32 72 42 L 72 68 C 72 78 28 78 28 68 Z" fill="url(#coc-skin-real)" />
+          <path d="M 28 42 C 28 32 72 32 72 42 L 72 68 C 72 78 28 78 28 68 Z" fill={`url(#${skinRealId})`} />
 
           {/* Sideburns Hair */}
           <path d="M 27 34 L 27 50 L 32 46 Z" fill="#f1c40f" />
           <path d="M 73 34 L 73 50 L 68 46 Z" fill="#f1c40f" />
 
           {/* Helmet on Head */}
-          <path d="M 25 34 C 25 15 75 15 75 34 C 75 36 25 36 25 34 Z" fill="url(#coc-helmet-metal)" stroke="#4a3b00" strokeWidth="1.5" />
+          <path d="M 25 34 C 25 15 75 15 75 34 C 75 36 25 36 25 34 Z" fill={`url(#${helmetMetalId})`} stroke="#4a3b00" strokeWidth="1.5" />
           {/* Helmet center strip ridge */}
           <path d="M 47 16 C 47 16 50 12 50 12 C 50 12 53 16 53 16 L 53 34 L 47 34 Z" fill="#fff" opacity="0.3" />
           {/* Helmet rivets */}
@@ -82,7 +86,7 @@ export default function GameIcon({ gameId, className = "w-full h-full" }: GameIc
           <path d="M 38 64 L 42 61 L 46 62 L 50 60 L 54 62 L 58 61 L 62 64" fill="#ffffff" stroke="#2c0c00" strokeWidth="0.5" />
 
           {/* Golden Yellow Mustache Curve around mouth */}
-          <path d="M 34 50 Q 50 48 66 50 C 72 66 65 76 60 76 Q 50 66 40 76 C 35 76 28 66 34 50 Z" fill="url(#coc-hair)" stroke="#4a3b00" strokeWidth="1.5" />
+          <path d="M 34 50 Q 50 48 66 50 C 72 66 65 76 60 76 Q 50 66 40 76 C 35 76 28 66 34 50 Z" fill={`url(#${hairId})`} stroke="#4a3b00" strokeWidth="1.5" />
           
           {/* Hollow nose */}
           <path d="M 46 48 Q 50 45 54 48 Z" fill="#cf6a32" />
@@ -109,35 +113,40 @@ export default function GameIcon({ gameId, className = "w-full h-full" }: GameIc
 
   if (gameId === 'bgmi') {
     // BGMI/PUBG Soldier Helmet with Orange Smoke backdrop + BGMI banner (exact layout)
+    const skyBackId = `bgmi-sky-back-${baseId}`;
+    const steelGradId = `bgmi-steel-grad-${baseId}`;
+    const smokeCloudId = `smoke-cloud-${baseId}`;
+    const blurId = `bgmi-blur-${baseId}`;
+
     return (
       <svg viewBox="0 0 100 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <linearGradient id="bgmi-sky-back" x1="0%" y1="0%" x2="0%" y2="100%">
+          <linearGradient id={skyBackId} x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="#ff4500" />
             <stop offset="45%" stopColor="#e02000" />
             <stop offset="100%" stopColor="#120200" />
           </linearGradient>
-          <linearGradient id="bgmi-steel-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id={steelGradId} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#707680" />
             <stop offset="50%" stopColor="#2e3136" />
             <stop offset="100%" stopColor="#111215" />
           </linearGradient>
-          <linearGradient id="smoke-cloud" x1="0%" y1="100%" x2="100%" y2="0%">
+          <linearGradient id={smokeCloudId} x1="0%" y1="100%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#ff8c00" stopOpacity="0.8" />
             <stop offset="100%" stopColor="#ff0000" stopOpacity="0.1" />
           </linearGradient>
-          <filter id="bgmi-blur" x="-20%" y="-20%" width="140%" height="140%">
+          <filter id={blurId} x="-20%" y="-20%" width="140%" height="140%">
             <feGaussianBlur stdDeviation="3" />
           </filter>
         </defs>
 
         {/* Icon Background Container */}
-        <rect width="100" height="100" rx="20" fill="url(#bgmi-sky-back)" />
+        <rect width="100" height="100" rx="20" fill={`url(#${skyBackId})`} />
 
         {/* Cinematic Fiery Explosive smoke trails/elements in backdrop */}
-        <circle cx="15" cy="25" r="18" fill="url(#smoke-cloud)" filter="url(#bgmi-blur)" />
-        <circle cx="85" cy="30" r="22" fill="url(#smoke-cloud)" filter="url(#bgmi-blur)" />
-        <circle cx="50" cy="15" r="15" fill="#ffa500" opacity="0.6" filter="url(#bgmi-blur)" />
+        <circle cx="15" cy="25" r="18" fill={`url(#${smokeCloudId})`} filter={`url(#${blurId})`} />
+        <circle cx="85" cy="30" r="22" fill={`url(#${smokeCloudId})`} filter={`url(#${blurId})`} />
+        <circle cx="50" cy="15" r="15" fill="#ffa500" opacity="0.6" filter={`url(#${blurId})`} />
 
         {/* Soldier Player Silhouette standing */}
         {/* Collar / White Shirt */}
@@ -152,7 +161,7 @@ export default function GameIcon({ gameId, className = "w-full h-full" }: GameIc
         <path d="M 36 50 L 32 64 Q 50 70 68 64 L 64 50 Z" fill="#15171c" />
 
         {/* Helmet Main Dome */}
-        <path d="M 24 50 C 24 22 76 22 76 50 L 78 57 L 22 57 Z" fill="url(#bgmi-steel-grad)" stroke="#111" strokeWidth="1.5" />
+        <path d="M 24 50 C 24 22 76 22 76 50 L 78 57 L 22 57 Z" fill={`url(#${steelGradId})`} stroke="#111" strokeWidth="1.5" />
 
         {/* Welding Visor viewport plate slightly angled */}
         <path d="M 28 38 L 72 38 L 74 50 L 26 50 Z" fill="#0c0d10" stroke="#111" strokeWidth="1" />
@@ -186,32 +195,37 @@ export default function GameIcon({ gameId, className = "w-full h-full" }: GameIc
 
   if (gameId === 'pogo') {
     // Pokémon GO detailed emblem (Exact Pokeball floating in dynamic blue starry grid environment)
+    const skyGradId = `pogo-sky-grad-${baseId}`;
+    const ballRedId = `ball-red-${baseId}`;
+    const ballWhiteId = `ball-white-${baseId}`;
+    const ringShineId = `ring-shine-${baseId}`;
+
     return (
       <svg viewBox="0 0 100 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <linearGradient id="pogo-sky-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <linearGradient id={skyGradId} x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="#0a3bc7" />
             <stop offset="50%" stopColor="#051559" />
             <stop offset="100%" stopColor="#01041c" />
           </linearGradient>
-          <linearGradient id="ball-red" x1="30" y1="20" x2="50" y2="50" gradientUnits="userSpaceOnUse">
+          <linearGradient id={ballRedId} x1="30" y1="20" x2="50" y2="50" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stopColor="#ff5959" />
             <stop offset="60%" stopColor="#dc0909" />
             <stop offset="100%" stopColor="#8a0000" />
           </linearGradient>
-          <linearGradient id="ball-white" x1="50" y1="50" x2="70" y2="80" gradientUnits="userSpaceOnUse">
+          <linearGradient id={ballWhiteId} x1="50" y1="50" x2="70" y2="80" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stopColor="#ffffff" />
             <stop offset="70%" stopColor="#dedede" />
             <stop offset="100%" stopColor="#9e9e9e" />
           </linearGradient>
-          <radialGradient id="ring-shine" cx="50%" cy="50%" r="50%">
+          <radialGradient id={ringShineId} cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="#ffffff" stopOpacity="0.8" />
             <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
           </radialGradient>
         </defs>
 
         {/* Dynamic Space Sky Background */}
-        <rect width="100" height="100" rx="20" fill="url(#pogo-sky-grad)" />
+        <rect width="100" height="100" rx="20" fill={`url(#${skyGradId})`} />
         <rect x="2" y="2" width="96" height="96" rx="18" stroke="#1e3a8a" strokeWidth="2" opacity="0.6" />
 
         {/* Star sparkles */}
@@ -232,10 +246,10 @@ export default function GameIcon({ gameId, className = "w-full h-full" }: GameIc
           <circle cx="50" cy="52" r="30" fill="#000000" opacity="0.35" />
 
           {/* White Hemisphere bottom half */}
-          <path d="M 20 50 A 30 30 0 0 0 80 50 Z" fill="url(#ball-white)" />
+          <path d="M 20 50 A 30 30 0 0 0 80 50 Z" fill={`url(#${ballWhiteId})`} />
 
           {/* Red Hemisphere top half */}
-          <path d="M 20 50 A 30 30 0 0 1 80 50 Z" fill="url(#ball-red)" />
+          <path d="M 20 50 A 30 30 0 0 1 80 50 Z" fill={`url(#${ballRedId})`} />
 
           {/* Top gloss white reflection crescents overlay */}
           <path d="M 25 45 C 27 30 40 22 55 24 C 42 24 30 32 27 45 Z" fill="#ffffff" opacity="0.4" />
@@ -257,18 +271,20 @@ export default function GameIcon({ gameId, className = "w-full h-full" }: GameIc
   }
 
   // chess - Chess.com Premium Pawn flat style matching the image uploaded.
+  const chessTileBgId = `chess-tile-bg-${baseId}`;
+
   return (
     <svg viewBox="0 0 100 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         {/* Soft chess.com standard gradient dark bg */}
-        <linearGradient id="chess-tile-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id={chessTileBgId} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#312e2b" />
           <stop offset="100%" stopColor="#211f1d" />
         </linearGradient>
       </defs>
 
       {/* Background with subtle 4-tile split line (like the Chess.com icon) */}
-      <rect width="100" height="100" rx="20" fill="url(#chess-tile-bg)" fillOpacity="1" />
+      <rect width="100" height="100" rx="20" fill={`url(#${chessTileBgId})`} fillOpacity="1" />
       
       {/* Visual quadrant quadrant shading */}
       <rect x="0" y="0" width="50" height="100" fill="#000" fillOpacity="0.1" /> {/** Left vertical half is slightly darkened */}

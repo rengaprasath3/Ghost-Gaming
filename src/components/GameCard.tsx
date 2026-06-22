@@ -31,17 +31,19 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
   });
 
   // Mapped physical parameters
-  const rawScale = useTransform(scrollYProgress, [0, 0.45, 0.55, 1], [0.93, 1.0, 1.0, 0.93]);
-  const rawOpacity = useTransform(scrollYProgress, [0, 0.25, 0.75, 1], [0.55, 1.0, 1.0, 0.55]);
-  const rawRotateX = useTransform(scrollYProgress, [0, 0.5, 1], [6, 0, -6]);
-  const rawTranslateY = useTransform(scrollYProgress, [0, 0.5, 1], [30, 0, -30]);
+  const rawScale = useTransform(scrollYProgress, [0, 0.45, 0.55, 1], [0.1, 1.00, 1.00, 0.1]);
+  const rawOpacity = useTransform(scrollYProgress, [0, 0.25, 0.75, 1], [0.45, 1.0, 1.0, 0.45]);
+  const rawRotateX = useTransform(scrollYProgress, [0, 0.5, 1], [8, 0, -8]);
+  const rawTranslateY = useTransform(scrollYProgress, [0, 0.5, 1], [50, 0, -50]);
+  const rawIconScale = useTransform(scrollYProgress, [0, 0.45, 0.55, 1], [0.85, 1.15, 1.15, 0.85]);
 
   // Spring interpolations for continuous, fluid inertial kinetic motion
-  const springConfig = { stiffness: 85, damping: 20, mass: 0.75 };
+  const springConfig = { stiffness: 95, damping: 22, mass: 0.8 };
   const scale = useSpring(rawScale, springConfig);
   const opacity = useSpring(rawOpacity, springConfig);
   const rotateX = useSpring(rawRotateX, springConfig);
   const translateY = useSpring(rawTranslateY, springConfig);
+  const iconScale = useSpring(rawIconScale, { stiffness: 100, damping: 20, mass: 0.8 });
 
   // Custom Event listener for robot laser attacks
   useEffect(() => {
@@ -142,7 +144,8 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
           opacity,
           rotateX,
           translateY,
-          transformStyle: "preserve-3d"
+          transformStyle: "preserve-3d",
+          willChange: "transform, opacity"
         }}
         className={`relative overflow-hidden rounded-2xl border transition-all duration-300 select-none cursor-pointer ${
           isActive ? colorConfig.borderActive : colorConfig.borderInactive
@@ -195,15 +198,16 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
         
         {/* Upper Title Block */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex flex-row items-center gap-4">
-            <div 
+          <div className="flex flex-row items-center gap-5 sm:gap-7">
+            <motion.div 
               id={`game-icon-${game.id}`} 
-              className={`rounded-2xl border flex items-center justify-center overflow-hidden shrink-0 shadow-xl transition-all duration-300 w-16 h-16 sm:w-20 sm:h-20 ${colorConfig.iconBg}`}
+              style={{ scale: iconScale }}
+              className={`rounded-2xl border flex items-center justify-center overflow-hidden shrink-0 shadow-xl w-16 h-16 sm:w-20 sm:h-20 ${colorConfig.iconBg}`}
             >
               <div className="w-[85%] h-[85%] flex items-center justify-center">
                 <GameIcon gameId={game.id} className="w-full h-full" />
               </div>
-            </div>
+            </motion.div>
             
             <div className="flex flex-col items-start">
               <div className="flex items-center gap-2">
@@ -234,16 +238,16 @@ export default function GameCard({ game, isActive, onSelect }: GameCardProps) {
         </div>
 
         {/* Major Stat Widgets Row */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3.5 mt-5">
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-3 mt-5">
           {game.mainStats.map((stat, idx) => (
             <div 
               key={idx} 
-              className="border p-2 sm:p-3 rounded-xl text-center bg-[#121426]/95 border-zinc-850 shadow-md"
+              className="border p-1.5 sm:p-3 rounded-xl flex flex-col justify-center text-center bg-[#121426]/95 border-zinc-850 shadow-md min-w-0"
             >
-              <div className="text-[9px] md:text-[10px] font-mono text-slate-400 uppercase tracking-widest font-bold">
+              <div className="text-[8px] md:text-[10px] font-mono text-slate-400 uppercase tracking-wider font-bold truncate">
                 {stat.label}
               </div>
-              <div className={`text-xs md:text-sm font-black font-mono mt-1 ${stat.highlight ? colorConfig.textAccent : 'text-slate-200'}`}>
+              <div className={`text-[10px] min-[380px]:text-xs md:text-sm leading-tight font-black font-mono mt-1 break-words whitespace-normal ${stat.highlight ? colorConfig.textAccent : 'text-slate-200'}`}>
                 {stat.value}
               </div>
             </div>
